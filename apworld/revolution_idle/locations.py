@@ -38,19 +38,52 @@ class RevolutionIdleLocation(Location):
     game = "Revolution Idle"
 
 
+def selected_achievement_ids(world: RevolutionIdleWorld) -> list[int]:
+    """Pick which achievements become checks, honoring the achievement_pool size.
+
+    Always includes a few early (Menu-tier) achievements so there's a reachable foothold at the
+    start, then samples the rest across all tiers (deterministically via world.random)."""
+    n = world.options.achievement_pool.value
+    if n >= ACH_COUNT:
+        return list(range(ACH_COUNT))
+
+    rng = world.random
+    menu_ids = list(range(0, 30))
+    rng.shuffle(menu_ids)
+    floor = min(len(menu_ids), n, 8)
+    chosen = set(menu_ids[:floor])
+
+    rest = [i for i in range(ACH_COUNT) if i not in chosen]
+    rng.shuffle(rest)
+    for i in rest:
+        if len(chosen) >= n:
+            break
+        chosen.add(i)
+    return sorted(chosen)
+
+
 def create_all_locations(world: RevolutionIdleWorld) -> None:
-    for start, end, region_name in TIERS:
-        region = world.get_region(region_name)
-        names_to_ids = {ach_location_name(i): ACH_ID_BASE + i for i in range(start, end)}
-        region.add_locations(names_to_ids, RevolutionIdleLocation)
+    ids = selected_achievement_ids(world)
+
+    by_region: dict[str, dict[str, int]] = {region_name: {} for _, _, region_name in TIERS}
+    for gid in ids:
+        for start, end, region_name in TIERS:
+            if start <= gid < end:
+                by_region[region_name][ach_location_name(gid)] = ACH_ID_BASE + gid
+                break
+
+    for _, _, region_name in TIERS:
+        names_to_ids = by_region[region_name]
+        if names_to_ids:
+            world.get_region(region_name).add_locations(names_to_ids, RevolutionIdleLocation)
 
     create_victory_event(world)
 
 
 def create_victory_event(world: RevolutionIdleWorld) -> None:
-    # Victory lives in the Unity region (reaching Unity requires Infinity+Eternity+Unity unlocks).
-    unity = world.get_region("Unity")
-    victory = RevolutionIdleLocation(world.player, "Goal Reached", None, unity)
+    # Victory lives in the goal's region (reaching it requires the matching layer unlocks).
+    region = world.get_region(world.goal_region_name)
+    victory = RevolutionIdleLocation(world.player, "Goal Reached", None, region)
 
     # The equality goal additionally requires collecting every non-tower unlock (completionist).
     if world.is_equality_goal:
@@ -59,4 +92,4 @@ def create_victory_event(world: RevolutionIdleWorld) -> None:
         victory.access_rule = lambda state: state.has_all(extra, player)
 
     victory.place_locked_item(RevolutionIdleItem("Victory", items.P, None, world.player))
-    unity.locations.append(victory)
+    region.locations.append(victory)

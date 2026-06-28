@@ -85,22 +85,31 @@ public class Plugin : BasePlugin
             Client.CompleteGoal();
     }
 
-    // unity (goal 0): the permanent Unity-reached flag achByte[160].
-    // equality (goal 1): no unlock flag exists, so use the Equality currency (scoreEquality > 0).
+    // Goal signals (slot_data goal value):
+    //   0 unity    -> achByte[160]   1 equality -> scoreEquality > 0
+    //   2 infinity -> achByte[29]    3 eternity -> achByte[69]
     private static bool IsGoalReached(GameData data)
     {
         try
         {
-            if (Client!.Goal == 1)
-                return data.scoreEquality.ToDouble() > 0.0;
-
-            var ab = data.achByte;
-            return ab != null && ab.Length > 160 && ab[160] == 1;
+            switch (Client!.Goal)
+            {
+                case 1: return data.scoreEquality.ToDouble() > 0.0;
+                case 2: return AchByteSet(data, 29);
+                case 3: return AchByteSet(data, 69);
+                default: return AchByteSet(data, 160);
+            }
         }
         catch (System.Exception e)
         {
             Logger.LogError("[AP] goal check error: " + e.Message);
             return false;
         }
+    }
+
+    private static bool AchByteSet(GameData data, int index)
+    {
+        var ab = data.achByte;
+        return ab != null && ab.Length > index && ab[index] == 1;
     }
 }

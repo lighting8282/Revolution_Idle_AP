@@ -7,11 +7,24 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 ## [Unreleased]
 
 ### Planned
-- Equality goal verified in a deep playthrough (goal-firing logic is implemented but not yet
-  tripped by real progress in-game).
+- Real in-game effects for filler/traps (currently received but inert), then filler/trap weights.
 - Per-side-system achievement gating (current logic gates by prestige tier only).
 - Optional secret achievements as checks.
+- Equality goal verified in a deep playthrough.
 - PopTracker pack.
+
+## [0.3.0] - 2026-06-28
+
+### Added
+- **`achievement_pool` option** — choose how many of the 520 achievements are checks (50–520,
+  default 520). Lower = shorter run. Checks are sampled across all tiers with a guaranteed early-tier
+  foothold, so gating holds at any size.
+- **Two more goals** — `infinity` (reach the Infinity layer) and `eternity` (reach Eternity), in
+  addition to `unity` and `equality`. The mod auto-detects all four.
+
+### Changed
+- `goal` option values: `unity=0`, `equality=1` are unchanged; `infinity=2`, `eternity=3` added.
+- Clarified the `equality` goal description.
 
 ## [0.2.0] - 2026-06-28
 

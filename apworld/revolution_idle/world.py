@@ -25,8 +25,19 @@ class RevolutionIdleWorld(World):
 
     origin_region_name = "Menu"
 
-    # Victory lives in the Unity region for both goals; the equality goal adds an extra item
-    # requirement on the Victory event (see locations.create_victory_event).
+    # Region whose Victory event must be reached, per goal. The equality goal additionally requires
+    # collecting every unlock (see locations.create_victory_event).
+    GOAL_REGION = {
+        ri_options.Goal.option_infinity: "Infinity",
+        ri_options.Goal.option_eternity: "Eternity",
+        ri_options.Goal.option_unity: "Unity",
+        ri_options.Goal.option_equality: "Unity",
+    }
+
+    @property
+    def goal_region_name(self) -> str:
+        return self.GOAL_REGION[self.options.goal.value]
+
     @property
     def is_equality_goal(self) -> bool:
         return self.options.goal.value == ri_options.Goal.option_equality

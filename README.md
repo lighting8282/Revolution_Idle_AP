@@ -28,7 +28,8 @@ builds mod support, ~2–4 min), then edit
 - 520 achievement location checks; 35 items (layer unlocks, side-system unlocks, automation, filler, traps).
 - **Tiered logic** mirroring the game's own progression: base → Infinity → Eternity → Unity, each
   gated by its unlock item (derived from the game's `Const.ACH_RANGES`).
-- Goals: `unity` (reach the Unity layer) and `equality` (completionist).
+- Goals: `infinity`, `eternity`, `unity`, or `equality` (completionist) — all auto-detected in-game.
+- Adjustable run length via `achievement_pool` (use 50–520 of the achievements as checks).
 - Full in-game integration: receiving an item unlocks the matching system (30 unlocks across 9 game
   classes); completing an achievement sends its check; goals are auto-detected.
 - Save/seed binding warns if you connect a save that belongs to a different seed.
@@ -50,7 +51,8 @@ game: Revolution Idle
 requires:
   version: 0.6.8
 Revolution Idle:
-  goal: unity        # or: equality
+  goal: unity            # infinity | eternity | unity | equality
+  achievement_pool: 520  # 50-520; fewer = shorter run
   trap_chance: 10
   death_link: false
 ```
