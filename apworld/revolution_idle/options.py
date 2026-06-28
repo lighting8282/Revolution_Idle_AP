@@ -8,7 +8,7 @@ class Goal(Choice):
     The victory condition for your run.
 
     unity: reach the Unity layer (medium-length run).
-    equality: reach Equality, the final layer (long run).
+    equality: reach Unity, collect every unlock, and earn Equality currency (long/completionist run).
     """
 
     display_name = "Goal"

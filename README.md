@@ -34,11 +34,21 @@ builds mod support, ~2–4 min), then edit
 - Save/seed binding warns if you connect a save that belongs to a different seed.
 - Options: goal, trap chance, death link (no-op — the game has no death mechanic).
 
-### YAML example
+### YAML
+
+A full, commented template (standard Archipelago format) is in
+[`examples/Revolution Idle.yaml`](examples/Revolution%20Idle.yaml). The website's "Generate Template"
+and the Archipelago Launcher's "Generate Template Options" also produce it automatically once the
+apworld is installed.
+
+A minimal config looks like:
 
 ```yaml
-name: Player1
+name: Player{number}
+description: My Revolution Idle run
 game: Revolution Idle
+requires:
+  version: 0.6.8
 Revolution Idle:
   goal: unity        # or: equality
   trap_chance: 10
