@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from Options import Choice, DeathLink, OptionGroup, PerGameCommonOptions, Range
+from Options import Choice, DeathLink, OptionGroup, PerGameCommonOptions, Range, Toggle
 
 
 class Goal(Choice):
@@ -38,8 +38,20 @@ class AchievementPool(Range):
     default = 520
 
 
+class ProgressiveLayers(Toggle):
+    """
+    Replace the separate Infinity/Eternity/Unity unlock items with three "Progressive Layer" items
+    that unlock the next layer in order (1st -> Infinity, 2nd -> Eternity, 3rd -> Unity).
+    """
+
+    display_name = "Progressive Layers"
+
+
 class TrapChance(Range):
-    """Percentage chance that each filler item is replaced by a trap."""
+    """Percentage chance that each filler item is replaced by a trap.
+
+    Filler grants ~60 seconds of your current income; traps remove ~120 seconds of progress.
+    """
 
     display_name = "Trap Chance"
     range_start = 0
@@ -51,10 +63,11 @@ class TrapChance(Range):
 class RevolutionIdleOptions(PerGameCommonOptions):
     goal: Goal
     achievement_pool: AchievementPool
+    progressive_layers: ProgressiveLayers
     trap_chance: TrapChance
     death_link: DeathLink
 
 
 option_groups = [
-    OptionGroup("General", [Goal, AchievementPool, TrapChance]),
+    OptionGroup("General", [Goal, AchievementPool, ProgressiveLayers, TrapChance]),
 ]

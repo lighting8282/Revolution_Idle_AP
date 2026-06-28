@@ -21,6 +21,7 @@ ITEM_TABLE: dict[str, tuple[int, ItemClassification]] = {
     "Eternity Unlock": (3, P),   # gates the Eternity region
     "Unity Unlock": (4, P),      # gates the Unity region
     "Equality Unlock": (5, U),   # no in-game gate exists; kept for flavor / equality goal
+    "Progressive Layer": (6, P), # progressive_layers mode: unlocks Infinity -> Eternity -> Unity in order
 
     # --- Side systems (useful; become progression under the equality goal) ---
     "Minerals Unlock": (100, U),
@@ -65,6 +66,10 @@ DEFAULT_ITEM_CLASSIFICATIONS: dict[str, ItemClassification] = {name: data[1] for
 # Given free at game start so the base tier (achievements 0-29) is reachable; not in the random pool.
 PRECOLLECTED_ITEMS: list[str] = ["Prestige Unlock"]
 
+# The three layer gates, in order. Under progressive_layers they're replaced by 3x "Progressive Layer".
+LAYER_UNLOCKS: list[str] = ["Infinity Unlock", "Eternity Unlock", "Unity Unlock"]
+PROGRESSIVE_LAYER = "Progressive Layer"
+
 FILLER_ITEM_NAME = "Score Boost"
 TRAP_ITEM_NAME = "Slowdown Trap"
 
@@ -75,10 +80,11 @@ EQUALITY_EXTRA_ITEMS: list[str] = [
     if cls is U  # all the useful unlocks: side systems, automation, Equality Unlock
 ]
 
-# Every non-filler item that goes into the pool exactly once (excludes precollected Prestige).
+# Every non-filler item that goes into the pool exactly once (excludes precollected Prestige and the
+# Progressive Layer item, which is only added under progressive_layers mode by create_all_items).
 GUARANTEED_ITEMS: list[str] = [
     name for name, (_id, cls) in ITEM_TABLE.items()
-    if cls not in (F, T) and name not in PRECOLLECTED_ITEMS
+    if cls not in (F, T) and name not in PRECOLLECTED_ITEMS and name != PROGRESSIVE_LAYER
 ]
 
 
@@ -109,7 +115,13 @@ def create_all_items(world: RevolutionIdleWorld) -> None:
     for name in PRECOLLECTED_ITEMS:
         world.push_precollected(world.create_item(name))
 
-    itempool: list[Item] = [world.create_item(name) for name in GUARANTEED_ITEMS]
+    pool_names = list(GUARANTEED_ITEMS)
+    if world.options.progressive_layers:
+        # Swap the three distinct layer unlocks for three Progressive Layer items.
+        pool_names = [n for n in pool_names if n not in LAYER_UNLOCKS]
+        pool_names += [PROGRESSIVE_LAYER] * len(LAYER_UNLOCKS)
+
+    itempool: list[Item] = [world.create_item(name) for name in pool_names]
 
     number_of_unfilled_locations = len(world.multiworld.get_unfilled_locations(world.player))
     needed_filler = number_of_unfilled_locations - len(itempool)

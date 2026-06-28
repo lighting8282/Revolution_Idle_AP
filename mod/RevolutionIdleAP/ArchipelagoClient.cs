@@ -91,7 +91,13 @@ public class ArchipelagoClient
         {
             ItemInfo item = helper.DequeueItem();
             string name = item.ItemName ?? $"#{item.ItemId}";
-            UnlockState.Grant(name);
+            switch (name)
+            {
+                case "Progressive Layer": UnlockState.AddProgressiveLayer(); break;
+                case "Score Boost": ItemEffects.QueueScoreBoost(); break;
+                case "Slowdown Trap": ItemEffects.QueueTrap(); break;
+                default: UnlockState.Grant(name); break;
+            }
             Plugin.Logger.LogInfo($"[AP] received item: {name}");
         }
     }

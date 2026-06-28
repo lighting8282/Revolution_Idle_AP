@@ -4,28 +4,28 @@ from typing import TYPE_CHECKING
 
 from BaseClasses import Region
 
+from .items import LAYER_UNLOCKS, PROGRESSIVE_LAYER
+
 if TYPE_CHECKING:
     from .world import RevolutionIdleWorld
 
 # The prestige tower as a linear chain of regions, matching the game's achievement tiers
 # (Const.ACH_RANGES). Prestige is precollected, so the base tier (Menu) is reachable from the start.
-# (region_name, item_required_to_enter_from_previous_region)
-TOWER: list[tuple[str, str]] = [
-    ("Menu", ""),                     # base/prestige tier (achievements 0-29), always reachable
-    ("Infinity", "Infinity Unlock"),  # achievements 30-69
-    ("Eternity", "Eternity Unlock"),  # achievements 70-160
-    ("Unity", "Unity Unlock"),        # achievements 161-519
-]
+TOWER_REGIONS = ["Menu", "Infinity", "Eternity", "Unity"]
 
 
 def create_and_connect_regions(world: RevolutionIdleWorld) -> None:
-    for region_name, _ in TOWER:
+    for region_name in TOWER_REGIONS:
         world.multiworld.regions.append(Region(region_name, world.player, world.multiworld))
 
     player = world.player
-    for (prev_name, _), (next_name, required_item) in zip(TOWER, TOWER[1:]):
-        world.get_region(prev_name).connect(
-            world.get_region(next_name),
-            f"{prev_name} -> {next_name}",
-            lambda state, item=required_item: state.has(item, player),
-        )
+    progressive = bool(world.options.progressive_layers)
+
+    # Each step into the tower requires the next layer unlock. Under progressive_layers, all three
+    # are the same "Progressive Layer" item, counted (1 -> Infinity, 2 -> Eternity, 3 -> Unity).
+    for step, (prev_name, next_name) in enumerate(zip(TOWER_REGIONS, TOWER_REGIONS[1:]), start=1):
+        if progressive:
+            rule = lambda state, n=step: state.has(PROGRESSIVE_LAYER, player, n)
+        else:
+            rule = lambda state, item=LAYER_UNLOCKS[step - 1]: state.has(item, player)
+        world.get_region(prev_name).connect(world.get_region(next_name), f"{prev_name} -> {next_name}", rule)

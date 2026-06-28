@@ -30,6 +30,8 @@ builds mod support, ~2–4 min), then edit
   gated by its unlock item (derived from the game's `Const.ACH_RANGES`).
 - Goals: `infinity`, `eternity`, `unity`, or `equality` (completionist) — all auto-detected in-game.
 - Adjustable run length via `achievement_pool` (use 50–520 of the achievements as checks).
+- Optional `progressive_layers` (one item unlocks the next layer in order).
+- Real filler/trap effects: `Score Boost` grants ~60s of income; `Slowdown Trap` removes ~120s.
 - Full in-game integration: receiving an item unlocks the matching system (30 unlocks across 9 game
   classes); completing an achievement sends its check; goals are auto-detected.
 - Save/seed binding warns if you connect a save that belongs to a different seed.
@@ -51,8 +53,9 @@ game: Revolution Idle
 requires:
   version: 0.6.8
 Revolution Idle:
-  goal: unity            # infinity | eternity | unity | equality
-  achievement_pool: 520  # 50-520; fewer = shorter run
+  goal: unity              # infinity | eternity | unity | equality
+  achievement_pool: 520    # 50-520; fewer = shorter run
+  progressive_layers: false
   trap_chance: 10
   death_link: false
 ```

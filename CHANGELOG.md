@@ -7,11 +7,19 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 ## [Unreleased]
 
 ### Planned
-- Real in-game effects for filler/traps (currently received but inert), then filler/trap weights.
 - Per-side-system achievement gating (current logic gates by prestige tier only).
 - Optional secret achievements as checks.
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
+
+## [0.4.0] - 2026-06-28
+
+### Added
+- **Real filler/trap effects** — `Score Boost` now grants ~60s of your current income; the
+  `Slowdown Trap` removes ~120s of progress (clamped at 0). Both scale with your stage and are
+  applied safely to the live game (no save corruption).
+- **`progressive_layers` option** — replace the separate Infinity/Eternity/Unity unlock items with
+  three "Progressive Layer" items that unlock the next layer in order.
 
 ## [0.3.0] - 2026-06-28
 

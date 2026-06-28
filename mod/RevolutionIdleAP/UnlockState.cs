@@ -56,9 +56,25 @@ public static class UnlockState
     // "TypeName.getterName" -> AP item name (built from the map above).
     private static readonly Dictionary<string, string> GetterKeyToItem = new();
 
+    // Under progressive_layers, the Nth "Progressive Layer" item unlocks this getter.
+    private static readonly Dictionary<string, int> ProgressiveThreshold = new()
+    {
+        ["GameData.get_InfinityUnlocked"] = 1,
+        ["GameData.get_EternityUnlocked"] = 2,
+        ["GameData.get_UnityUnlocked"] = 3,
+    };
+
     private static readonly HashSet<string> _granted = new();
     private static readonly HashSet<string> _loggedForce = new();
+    private static int _progressiveLayers;
     private static readonly object _lock = new();
+
+    public static void AddProgressiveLayer()
+    {
+        int count;
+        lock (_lock) { count = ++_progressiveLayers; }
+        Plugin.Logger.LogInfo($"[AP] Progressive Layer #{count} received.");
+    }
 
     public static void Grant(string itemName)
     {
@@ -101,6 +117,8 @@ public static class UnlockState
     {
         if (__result) return;
         string key = (__originalMethod.DeclaringType?.Name ?? "") + "." + __originalMethod.Name;
+
+        // Distinct unlock items.
         if (GetterKeyToItem.TryGetValue(key, out var item) && IsGranted(item))
         {
             __result = true;
@@ -108,6 +126,21 @@ public static class UnlockState
             {
                 if (_loggedForce.Add(item))
                     Plugin.Logger.LogInfo($"[AP] force-unlocked '{item}' via {key}");
+            }
+            return;
+        }
+
+        // Progressive layers: enough "Progressive Layer" items received to reach this layer.
+        if (ProgressiveThreshold.TryGetValue(key, out int need))
+        {
+            lock (_lock)
+            {
+                if (_progressiveLayers >= need)
+                {
+                    __result = true;
+                    if (_loggedForce.Add(key))
+                        Plugin.Logger.LogInfo($"[AP] force-unlocked {key} via Progressive Layer (>= {need})");
+                }
             }
         }
     }

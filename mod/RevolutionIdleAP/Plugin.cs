@@ -80,6 +80,9 @@ public class Plugin : BasePlugin
             }
         }
 
+        // Apply any queued filler/trap effects (score boost / slowdown).
+        ItemEffects.ApplyPending(data);
+
         // Goal detection.
         if (!Client.GoalSent && IsGoalReached(data))
             Client.CompleteGoal();
