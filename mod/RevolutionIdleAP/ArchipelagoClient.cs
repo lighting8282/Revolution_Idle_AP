@@ -30,6 +30,11 @@ public class ArchipelagoClient
     public string Slot { get; private set; } = "";
     public string Seed { get; private set; } = "";
 
+    // Human-readable connection status for the in-game menu.
+    public string Status { get; private set; } = "Not connected";
+
+    public void SetStatus(string s) => Status = s;
+
     public void ConnectAsync(string host, int port, string slot, string password)
     {
         Task.Run(() =>
@@ -41,6 +46,16 @@ public class ArchipelagoClient
 
     private void Connect(string host, int port, string slot, string password)
     {
+        // Tear down any existing session so the menu's Connect can act as Reconnect.
+        if (_session != null)
+        {
+            try { _session.Socket.DisconnectAsync(); } catch { }
+            _session = null;
+        }
+        Connected = false;
+        GoalSent = false;
+        Status = $"Connecting to {host}:{port}...";
+
         Plugin.Logger.LogInfo($"[AP] connecting to {host}:{port} as '{slot}'...");
         Slot = slot;
         _session = ArchipelagoSessionFactory.CreateSession(host, port);
@@ -51,6 +66,7 @@ public class ArchipelagoClient
         _session.Socket.SocketClosed += reason =>
         {
             Connected = false;
+            Status = $"Disconnected: {reason}";
             Plugin.Logger.LogWarning($"[AP] disconnected: {reason}");
         };
 
@@ -64,6 +80,7 @@ public class ArchipelagoClient
             if (success.SlotData != null && success.SlotData.TryGetValue("goal", out var g) && g != null)
                 Goal = Convert.ToInt32(g);
             try { Seed = _session.RoomState?.Seed ?? ""; } catch { Seed = ""; }
+            Status = $"Connected as {slot} (goal {Goal})";
             Plugin.Logger.LogInfo($"[AP] connected. goal={Goal} seed={Seed}");
 
             // DeathLink: Revolution Idle has no death mechanic, so we enable the service only to honor
@@ -81,6 +98,7 @@ public class ArchipelagoClient
         }
         else if (result is LoginFailure failure)
         {
+            Status = "Login failed: " + string.Join("; ", failure.Errors);
             Plugin.Logger.LogError("[AP] login failed: " + string.Join(" | ", failure.Errors));
         }
     }

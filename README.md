@@ -20,8 +20,7 @@ Grab the latest [**release**](https://github.com/lighting8282/Revolution_Idle_AP
 
 Full install steps are in the zip's `README.md`. In short: drop the `.apworld` into Archipelago's
 `custom_worlds/`, extract `Install-into-Game-Folder/` into your game folder, launch once (first run
-builds mod support, ~2–4 min), then edit
-`BepInEx/config/com.jontrnka.revolutionidle.ap.cfg` with your server/slot.
+builds mod support, ~2–4 min), then press **F1** in-game to open the connection menu and connect.
 
 ## Features
 
@@ -34,6 +33,7 @@ builds mod support, ~2–4 min), then edit
 - Real filler/trap effects: `Score Boost` grants ~60s of income; `Slowdown Trap` removes ~120s.
 - Full in-game integration: receiving an item unlocks the matching system (30 unlocks across 9 game
   classes); completing an achievement sends its check; goals are auto-detected.
+- In-game **F1 connection menu** (hostname/port/slot/password + status) — no config editing needed.
 - Save/seed binding warns if you connect a save that belongs to a different seed.
 - Options: goal, trap chance, death link (no-op — the game has no death mechanic).
 

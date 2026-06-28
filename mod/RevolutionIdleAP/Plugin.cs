@@ -13,23 +13,30 @@ public class Plugin : BasePlugin
 {
     public const string Guid = "com.jontrnka.revolutionidle.ap";
     public const string Name = "Revolution Idle Archipelago";
-    public const string Version = "0.1.0";
+    public const string Version = "0.5.0";
 
     internal static ManualLogSource Logger = null!;
     public static ArchipelagoClient? Client;
     private static bool _resynced;
     private static bool _seedChecked;
 
+    // In-game connection menu state (toggled with F1). Seeded from the config file.
+    public static bool ShowMenu = true;
+    public static string MenuHost = "archipelago.gg";
+    public static string MenuPort = "38281";
+    public static string MenuSlot = "Player1";
+    public static string MenuPass = "";
+
     public override void Load()
     {
         Logger = Log;
         Logger.LogInfo($"{Name} v{Version} loading...");
 
-        var host = Config.Bind("Connection", "Host", "archipelago.gg", "Archipelago server host").Value;
-        var port = Config.Bind("Connection", "Port", 38281, "Archipelago server port").Value;
-        var slot = Config.Bind("Connection", "Slot", "Player1", "Slot / player name").Value;
-        var pass = Config.Bind("Connection", "Password", "", "Server password (blank if none)").Value;
-        var enabled = Config.Bind("Connection", "Enabled", true, "Attempt AP connection on startup").Value;
+        MenuHost = Config.Bind("Connection", "Host", "archipelago.gg", "Archipelago server host").Value;
+        MenuPort = Config.Bind("Connection", "Port", 38281, "Archipelago server port").Value.ToString();
+        MenuSlot = Config.Bind("Connection", "Slot", "Player1", "Slot / player name").Value;
+        MenuPass = Config.Bind("Connection", "Password", "", "Server password (blank if none)").Value;
+        var enabled = Config.Bind("Connection", "Enabled", true, "Auto-connect on startup using the values above").Value;
 
         var harmony = new Harmony(Guid);
         harmony.PatchAll(typeof(AchievementPatches));
@@ -42,10 +49,24 @@ public class Plugin : BasePlugin
         go.AddComponent<RevApTicker>();
 
         Client = new ArchipelagoClient();
-        if (enabled) Client.ConnectAsync(host, port, slot, pass);
-        else Logger.LogInfo("[AP] connection disabled via config");
+        if (enabled) ConnectFromMenu();
+        else Logger.LogInfo("[AP] auto-connect disabled; use the F1 menu to connect.");
 
-        Logger.LogInfo("Revolution Idle AP loaded.");
+        Logger.LogInfo("Revolution Idle AP loaded. Press F1 in-game for the connection menu.");
+    }
+
+    // Connect (or reconnect) using the current menu field values.
+    public static void ConnectFromMenu()
+    {
+        if (Client == null) return;
+        if (!int.TryParse(MenuPort.Trim(), out int port))
+        {
+            Client.SetStatus("Invalid port: " + MenuPort);
+            return;
+        }
+        _resynced = false;
+        _seedChecked = false;
+        Client.ConnectAsync(MenuHost.Trim(), port, MenuSlot.Trim(), MenuPass);
     }
 
     // Called ~1/sec on the main thread by RevApTicker.

@@ -12,6 +12,13 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.5.0] - 2026-06-28
+
+### Added
+- **In-game connection menu** — press **F1** to open a panel with Hostname / Port / Slot / Password
+  fields, a Connect/Reconnect button, and a live status line. No more editing the config file by
+  hand (the config now just seeds the menu's default values and optional auto-connect on launch).
+
 ## [0.4.0] - 2026-06-28
 
 ### Added

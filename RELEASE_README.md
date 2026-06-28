@@ -33,19 +33,13 @@ Options:
 
 ## 3. Connect to a server
 
-After the first launch, edit
-`BepInEx\config\com.jontrnka.revolutionidle.ap.cfg` and set your room details:
+In-game, press **F1** to open the **Archipelago Connection** menu. Enter your room's Hostname, Port,
+and Slot Name (and Password if any), then click **Connect**. The status line shows whether you're
+connected. Press F1 again to hide the menu.
 
-```ini
-[Connection]
-Host = archipelago.gg
-Port = 38281
-Slot = YourSlotName
-Password =
-Enabled = true
-```
-
-Restart the game to connect. Check `BepInEx\LogOutput.log` for `[AP] connected.` to confirm.
+Prefer it to connect automatically? The menu's defaults come from
+`BepInEx\config\com.jontrnka.revolutionidle.ap.cfg` — set `Host`/`Port`/`Slot` there and leave
+`Enabled = true` to auto-connect on launch. Set `Enabled = false` to only connect via the F1 menu.
 
 ## 4. Start a fresh save (important)
 
