@@ -1,0 +1,158 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Archipelago.MultiClient.Net;
+using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
+using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Helpers;
+using Archipelago.MultiClient.Net.MessageLog.Messages;
+using Archipelago.MultiClient.Net.Models;
+using Archipelago.MultiClient.Net.Packets;
+
+namespace RevolutionIdleAP;
+
+// Wraps the Archipelago session: connection, receiving items, sending location checks, goal completion.
+public class ArchipelagoClient
+{
+    public const long AchIdBase = 10_000;
+    public const int AchCount = 520; // normal achievements are 0..519; secrets live at 10000+ (no AP location)
+    public const string GameName = "Revolution Idle";
+
+    private ArchipelagoSession? _session;
+    public bool Connected { get; private set; }
+
+    // Goal config (from slot_data): 0 = unity, 1 = equality. Detection lives in Plugin.IsGoalReached.
+    public int Goal { get; private set; } = 0;
+    public bool GoalSent { get; private set; }
+
+    // Identity of the connected multiworld, used to detect a save being reused across seeds.
+    public string Slot { get; private set; } = "";
+    public string Seed { get; private set; } = "";
+
+    public void ConnectAsync(string host, int port, string slot, string password)
+    {
+        Task.Run(() =>
+        {
+            try { Connect(host, port, slot, password); }
+            catch (Exception e) { Plugin.Logger.LogError($"[AP] connect threw: {e}"); }
+        });
+    }
+
+    private void Connect(string host, int port, string slot, string password)
+    {
+        Plugin.Logger.LogInfo($"[AP] connecting to {host}:{port} as '{slot}'...");
+        Slot = slot;
+        _session = ArchipelagoSessionFactory.CreateSession(host, port);
+
+        _session.Items.ItemReceived += OnItemReceived;
+        _session.MessageLog.OnMessageReceived += msg => Plugin.Logger.LogInfo("[AP] " + msg.ToString());
+        _session.Socket.ErrorReceived += (e, m) => Plugin.Logger.LogError($"[AP] socket error: {m} {e}");
+        _session.Socket.SocketClosed += reason =>
+        {
+            Connected = false;
+            Plugin.Logger.LogWarning($"[AP] disconnected: {reason}");
+        };
+
+        LoginResult result = _session.TryConnectAndLogin(
+            GameName, slot, ItemsHandlingFlags.AllItems,
+            password: string.IsNullOrEmpty(password) ? null : password);
+
+        if (result is LoginSuccessful success)
+        {
+            Connected = true;
+            if (success.SlotData != null && success.SlotData.TryGetValue("goal", out var g) && g != null)
+                Goal = Convert.ToInt32(g);
+            try { Seed = _session.RoomState?.Seed ?? ""; } catch { Seed = ""; }
+            Plugin.Logger.LogInfo($"[AP] connected. goal={Goal} seed={Seed}");
+
+            // DeathLink: Revolution Idle has no death mechanic, so we enable the service only to honor
+            // the slot option — received deaths are logged and ignored, and we never send any.
+            bool deathLink = success.SlotData != null && success.SlotData.TryGetValue("death_link", out var dl)
+                             && dl != null && Convert.ToInt64(dl) != 0;
+            if (deathLink)
+            {
+                var service = _session.CreateDeathLinkService();
+                service.OnDeathLinkReceived += d =>
+                    Plugin.Logger.LogInfo($"[AP] DeathLink received from {d.Source} ({d.Cause}) — ignored (no death mechanic).");
+                service.EnableDeathLink();
+                Plugin.Logger.LogInfo("[AP] DeathLink enabled (receive-only, no-op).");
+            }
+        }
+        else if (result is LoginFailure failure)
+        {
+            Plugin.Logger.LogError("[AP] login failed: " + string.Join(" | ", failure.Errors));
+        }
+    }
+
+    private void OnItemReceived(IReceivedItemsHelper helper)
+    {
+        while (helper.PeekItem() != null)
+        {
+            ItemInfo item = helper.DequeueItem();
+            string name = item.ItemName ?? $"#{item.ItemId}";
+            UnlockState.Grant(name);
+            Plugin.Logger.LogInfo($"[AP] received item: {name}");
+        }
+    }
+
+    // Send one achievement (game id) as an AP location check.
+    public void SendAchievement(int gameAchId)
+    {
+        if (!Connected || _session == null) return;
+        if (gameAchId < 0 || gameAchId >= AchCount) return; // skip secret achievements (no AP location)
+        try { _session.Locations.CompleteLocationChecks(AchIdBase + gameAchId); }
+        catch (Exception e) { Plugin.Logger.LogError($"[AP] send location {gameAchId} failed: {e.Message}"); }
+    }
+
+    // Resync: send every already-unlocked achievement id (called once after connecting).
+    public void SendAchievements(IEnumerable<int> gameAchIds)
+    {
+        if (!Connected || _session == null) return;
+        long[] ids = gameAchIds.Where(i => i >= 0 && i < AchCount).Select(i => AchIdBase + i).ToArray();
+        if (ids.Length == 0) return;
+        try
+        {
+            _session.Locations.CompleteLocationChecks(ids);
+            Plugin.Logger.LogInfo($"[AP] resynced {ids.Length} achievement location(s)");
+        }
+        catch (Exception e) { Plugin.Logger.LogError($"[AP] resync failed: {e.Message}"); }
+    }
+
+    public void CompleteGoal()
+    {
+        if (!Connected || _session == null || GoalSent) return;
+        GoalSent = true;
+        _session.Socket.SendPacketAsync(new StatusUpdatePacket { Status = ArchipelagoClientState.ClientGoal });
+        Plugin.Logger.LogInfo("[AP] goal reached -> sent ClientGoal");
+    }
+
+    // Bind the current game save to this seed, and warn loudly if it was previously used with a
+    // different seed (i.e. old unlocks/progress would corrupt this run).
+    public void CheckSeedBinding(string playerId, int saveId)
+    {
+        if (string.IsNullOrEmpty(Seed)) return; // seed unknown; nothing to compare
+        string key = $"{playerId}|{saveId}";
+        var map = SeedBindings.Load();
+
+        if (!map.TryGetValue(key, out var prev) || string.IsNullOrEmpty(prev))
+        {
+            map[key] = Seed;
+            SeedBindings.Save(map);
+            Plugin.Logger.LogInfo($"[AP] bound this save (saveId {saveId}) to seed {Seed}.");
+        }
+        else if (prev == Seed)
+        {
+            Plugin.Logger.LogInfo($"[AP] resuming seed {Seed} on this save. OK.");
+        }
+        else
+        {
+            Plugin.Logger.LogWarning("==================== AP SAVE MISMATCH ====================");
+            Plugin.Logger.LogWarning($"[AP] This save was previously used with seed {prev},");
+            Plugin.Logger.LogWarning($"[AP] but the connected server's seed is {Seed}.");
+            Plugin.Logger.LogWarning("[AP] Old progress/unlocks will carry over and corrupt this run!");
+            Plugin.Logger.LogWarning("[AP] Fix: in-game 'Start a new save' (or run reset-save.ps1), then reconnect.");
+            Plugin.Logger.LogWarning("==========================================================");
+        }
+    }
+}

@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <AssemblyName>RevolutionIdleAP</AssemblyName>
+    <RootNamespace>RevolutionIdleAP</RootNamespace>
+    <Version>0.1.0</Version>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <!-- Path to the game install (contains BepInEx/). -->
+    <GameDir>A:\SteamLibrary\steamapps\common\Revolution Idle</GameDir>
+    <NoWarn>$(NoWarn);CS0436;MSB3277;CS0618</NoWarn>
+    <!-- Bring NuGet package deps (Archipelago client + Newtonsoft) into bin so we can deploy them. -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Archipelago.MultiClient.Net" Version="6.7.1" />
+  </ItemGroup>
+
+  <!-- Reference every BepInEx core assembly and every generated IL2CPP interop assembly. -->
+  <ItemGroup>
+    <Reference Include="$([System.IO.Directory]::GetFiles('$(GameDir)\BepInEx\core', '*.dll'))">
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="$([System.IO.Directory]::GetFiles('$(GameDir)\BepInEx\interop', '*.dll'))">
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Deploy the plugin + its NuGet deps (Archipelago client, Newtonsoft) into the plugins folder. -->
+  <Target Name="DeployToPlugins" AfterTargets="Build">
+    <PropertyGroup>
+      <PluginOut>$(GameDir)\BepInEx\plugins\$(AssemblyName)</PluginOut>
+    </PropertyGroup>
+    <MakeDir Directories="$(PluginOut)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(PluginOut)" />
+    <Copy SourceFiles="$(OutDir)Archipelago.MultiClient.Net.dll" DestinationFolder="$(PluginOut)" Condition="Exists('$(OutDir)Archipelago.MultiClient.Net.dll')" />
+    <Copy SourceFiles="$(OutDir)Newtonsoft.Json.dll" DestinationFolder="$(PluginOut)" Condition="Exists('$(OutDir)Newtonsoft.Json.dll')" />
+    <Message Importance="high" Text="Deployed $(AssemblyName) + AP client to $(PluginOut)" />
+  </Target>
+
+</Project>
