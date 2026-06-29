@@ -49,10 +49,12 @@ Mode** runs the game **offline with its own isolated save**, so:
 - Your normal (cloud) save is never touched — it's a completely separate game.
 - Each **new seed automatically starts fresh**; reconnecting to the **same** seed resumes it.
 
-Two ways to use it:
+Three ways to use it:
 
-- **Easiest:** launch with the included shortcut **`Play Revolution Idle (AP).bat`** (in the game
-  folder). Use **`Play Revolution Idle (Normal).bat`** (or Steam) for normal play.
+- **In-game (easiest):** press **F1** and click the **AP Mode** button at the top — it switches
+  modes and **restarts the game for you**.
+- **Shortcut:** launch with **`Play Revolution Idle (AP).bat`** (in the game folder); use
+  **`Play Revolution Idle (Normal).bat`** (or Steam) for normal play.
 - **Manual:** set `Enabled = true` under `[AP Mode]` in
   `BepInEx\config\com.jontrnka.revolutionidle.ap.cfg` (set `false` for normal play).
 

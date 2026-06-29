@@ -12,6 +12,13 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.6.1] - 2026-06-29
+
+### Added
+- **In-game AP Mode toggle** in the F1 menu — switch between AP and normal play without editing
+  files or using a launcher; it flips the setting and **restarts the game automatically** so the
+  offline/isolated-save patches apply.
+
 ## [0.6.0] - 2026-06-29
 
 ### Added

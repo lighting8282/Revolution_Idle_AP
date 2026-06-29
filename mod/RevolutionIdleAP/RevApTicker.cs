@@ -28,11 +28,19 @@ public class RevApTicker : MonoBehaviour
         if (!Plugin.ShowMenu) return;
 
         const float x = 24f, top = 24f, w = 360f, pad = 10f, fh = 24f, lh = 18f, gap = 6f;
-        GUI.Box(new Rect(x, top, w, 312f), "Archipelago Connection");
+        GUI.Box(new Rect(x, top, w, 372f), "Archipelago Connection");
 
         float ix = x + pad, iw = w - pad * 2f, y = top + 30f;
 
         GUI.Label(new Rect(ix, y, iw, lh), "Press F1 to toggle this menu"); y += lh + gap;
+
+        // AP Mode toggle — flips offline/isolated-save mode and restarts the game.
+        GUI.Label(new Rect(ix, y, iw, lh), Plugin.APMode
+            ? "AP Mode: ON (offline, separate AP save)"
+            : "AP Mode: OFF (normal cloud save)"); y += lh;
+        if (GUI.Button(new Rect(ix, y, iw, fh), Plugin.APMode ? "Switch to Normal (restarts game)" : "Switch to AP (restarts game)"))
+            Plugin.ToggleApModeAndRestart();
+        y += fh + gap + 2f;
 
         GUI.Label(new Rect(ix, y, iw, lh), "Hostname:"); y += lh;
         Plugin.MenuHost = GUI.TextField(new Rect(ix, y, iw, fh), Plugin.MenuHost); y += fh + gap;

@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using BepInEx;
+using BepInEx.Configuration;
 using CodeStage.AntiCheat.Storage;
 using BepInEx.Logging;
 using BepInEx.Unity.IL2CPP;
@@ -15,7 +17,7 @@ public class Plugin : BasePlugin
 {
     public const string Guid = "com.jontrnka.revolutionidle.ap";
     public const string Name = "Revolution Idle Archipelago";
-    public const string Version = "0.6.0";
+    public const string Version = "0.6.1";
 
     internal static ManualLogSource Logger = null!;
     public static ArchipelagoClient? Client;
@@ -26,6 +28,7 @@ public class Plugin : BasePlugin
     // AP Mode: run offline (cloud blocked) + isolated save so AP play never touches your normal
     // cloud save and can start fresh per seed.
     public static bool APMode = false;
+    private static ConfigEntry<bool> _apModeEntry = null!;
 
     // In-game connection menu state (toggled with F1). Seeded from the config file.
     public static bool ShowMenu = true;
@@ -44,8 +47,9 @@ public class Plugin : BasePlugin
         MenuSlot = Config.Bind("Connection", "Slot", "Player1", "Slot / player name").Value;
         MenuPass = Config.Bind("Connection", "Password", "", "Server password (blank if none)").Value;
         var enabled = Config.Bind("Connection", "Enabled", true, "Auto-connect on startup using the values above").Value;
-        APMode = Config.Bind("AP Mode", "Enabled", false,
-            "Run offline with an isolated save so AP play never touches your normal cloud save (and can start fresh per seed). Turn OFF for normal play.").Value;
+        _apModeEntry = Config.Bind("AP Mode", "Enabled", false,
+            "Run offline with an isolated save so AP play never touches your normal cloud save (and can start fresh per seed). Turn OFF for normal play.");
+        APMode = _apModeEntry.Value;
         Logger.LogInfo($"[AP] AP Mode = {APMode}");
 
         var harmony = new Harmony(Guid);
@@ -79,6 +83,34 @@ public class Plugin : BasePlugin
         _resynced = false;
         _seedChecked = false;
         Client.ConnectAsync(MenuHost.Trim(), port, MenuSlot.Trim(), MenuPass);
+    }
+
+    // Flip AP Mode (persisted to config) and relaunch the game so the offline/save patches apply.
+    public static void ToggleApModeAndRestart()
+    {
+        if (_apModeEntry == null) return;
+        _apModeEntry.Value = !_apModeEntry.Value;   // BepInEx writes this to the .cfg immediately
+        Logger.LogInfo($"[AP] AP Mode -> {_apModeEntry.Value}; restarting game...");
+        RestartGame();
+    }
+
+    // Relaunch this game executable after the current instance exits (avoids a two-instance overlap),
+    // then quit. The new launch reads the updated AP Mode from config.
+    private static void RestartGame()
+    {
+        try
+        {
+            string exe = Process.GetCurrentProcess().MainModule!.FileName;
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Arguments = $"/c timeout /t 2 /nobreak >nul & start \"\" \"{exe}\"",
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            });
+        }
+        catch (System.Exception e) { Logger.LogError("[AP] restart failed: " + e.Message); }
+        Application.Quit();
     }
 
     // Called ~1/sec on the main thread by RevApTicker.
