@@ -19,6 +19,8 @@ public class ArchipelagoClient
     public const int AchCount = 520; // normal achievements are 0..519; secrets live at 10000+ (no AP location)
     public const long GenIdBase = 30_000;
     public const int GenCount = 10;  // base generators (GameData.infinity.generators)
+    public const long GenLevelIdBase = 40_000;
+    public const int GenMaxLevel = 100; // each generator levels 1..100
     public const string GameName = "Revolution Idle";
 
     private ArchipelagoSession? _session;
@@ -27,6 +29,9 @@ public class ArchipelagoClient
     // Goal config (from slot_data): 0 = unity, 1 = equality. Detection lives in Plugin.IsGoalReached.
     public int Goal { get; private set; } = 0;
     public bool GoalSent { get; private set; }
+
+    // From slot_data: a generator-level check every N levels (0 = generator-level checks disabled).
+    public int GenLevelInterval { get; private set; } = 0;
 
     // Identity of the connected multiworld, used to detect a save being reused across seeds.
     public string Slot { get; private set; } = "";
@@ -81,6 +86,8 @@ public class ArchipelagoClient
             Connected = true;
             if (success.SlotData != null && success.SlotData.TryGetValue("goal", out var g) && g != null)
                 Goal = Convert.ToInt32(g);
+            if (success.SlotData != null && success.SlotData.TryGetValue("generator_level_interval", out var gli) && gli != null)
+                GenLevelInterval = Convert.ToInt32(gli);
             try { Seed = _session.RoomState?.Seed ?? ""; } catch { Seed = ""; }
             Status = $"Connected as {slot} (goal {Goal})";
             Plugin.Logger.LogInfo($"[AP] connected. goal={Goal} seed={Seed}");
@@ -138,6 +145,15 @@ public class ArchipelagoClient
         if (index < 0 || index >= GenCount) return;
         try { _session.Locations.CompleteLocationChecks(GenIdBase + index); }
         catch (Exception e) { Plugin.Logger.LogError($"[AP] send generator {index} failed: {e.Message}"); }
+    }
+
+    // Send a generator-level check (generator #index reached level `level`).
+    public void SendGeneratorLevel(int index, int level)
+    {
+        if (!Connected || _session == null) return;
+        if (index < 0 || index >= GenCount || level < 1 || level > GenMaxLevel) return;
+        try { _session.Locations.CompleteLocationChecks(GenLevelIdBase + index * GenMaxLevel + level); }
+        catch (Exception e) { Plugin.Logger.LogError($"[AP] send generator {index} level {level} failed: {e.Message}"); }
     }
 
     // Resync: send every already-unlocked achievement id (called once after connecting).

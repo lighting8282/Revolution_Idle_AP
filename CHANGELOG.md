@@ -12,6 +12,14 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.6.3] - 2026-06-29
+
+### Added
+- **Generator-level checks** — new `generator_level_interval` option adds a check every N levels on
+  each of the 10 base generators (each levels 1–100 as you buy it). `0` disables it; `25` gives
+  checks at levels 25/50/75/100 (40 total), `10` gives 100 total. Sent via slot_data so only the
+  chosen milestones become locations. All sit in the base tier (reachable from the start).
+
 ## [0.6.2] - 2026-06-29
 
 ### Added

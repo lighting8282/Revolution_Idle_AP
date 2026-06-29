@@ -38,6 +38,22 @@ class AchievementPool(Range):
     default = 520
 
 
+class GeneratorLevelInterval(Range):
+    """
+    Add a location check every N levels on each of the 10 base generators (each generator levels
+    up as you buy it, from 1 to 100).
+
+    0 disables generator-level checks. Otherwise you get a check at level N, 2N, 3N ... up to 100
+    on every generator. Example: 25 -> checks at levels 25/50/75/100 (4 per generator, 40 total);
+    10 -> 10 per generator (100 total). Smaller values = far more checks.
+    """
+
+    display_name = "Generator Level Interval"
+    range_start = 0
+    range_end = 100
+    default = 0
+
+
 class ProgressiveLayers(Toggle):
     """
     Replace the separate Infinity/Eternity/Unity unlock items with three "Progressive Layer" items
@@ -63,11 +79,12 @@ class TrapChance(Range):
 class RevolutionIdleOptions(PerGameCommonOptions):
     goal: Goal
     achievement_pool: AchievementPool
+    generator_level_interval: GeneratorLevelInterval
     progressive_layers: ProgressiveLayers
     trap_chance: TrapChance
     death_link: DeathLink
 
 
 option_groups = [
-    OptionGroup("General", [Goal, AchievementPool, ProgressiveLayers, TrapChance]),
+    OptionGroup("General", [Goal, AchievementPool, GeneratorLevelInterval, ProgressiveLayers, TrapChance]),
 ]

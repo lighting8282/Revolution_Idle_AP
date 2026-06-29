@@ -59,4 +59,4 @@ class RevolutionIdleWorld(World):
         return items.get_random_filler_item_name(self)
 
     def fill_slot_data(self) -> Mapping[str, Any]:
-        return self.options.as_dict("goal", "death_link")
+        return self.options.as_dict("goal", "death_link", "generator_level_interval")
