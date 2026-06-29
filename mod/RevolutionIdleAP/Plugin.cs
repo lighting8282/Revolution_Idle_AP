@@ -17,13 +17,14 @@ public class Plugin : BasePlugin
 {
     public const string Guid = "com.jontrnka.revolutionidle.ap";
     public const string Name = "Revolution Idle Archipelago";
-    public const string Version = "0.6.1";
+    public const string Version = "0.6.2";
 
     internal static ManualLogSource Logger = null!;
     public static ArchipelagoClient? Client;
     private static bool _resynced;
     private static bool _seedChecked;
     private static bool _freshChecked;
+    private static readonly HashSet<int> _genSent = new();
 
     // AP Mode: run offline (cloud blocked) + isolated save so AP play never touches your normal
     // cloud save and can start fresh per seed.
@@ -162,6 +163,28 @@ public class Plugin : BasePlugin
                 Client.SendAchievements(ids);
             }
         }
+
+        // Generator checks: send one the first time you own each base generator.
+        try
+        {
+            var gens = data.infinity?.generators;
+            if (gens != null)
+            {
+                int n = gens.Count;
+                for (int i = 0; i < n && i < ArchipelagoClient.GenCount; i++)
+                {
+                    if (_genSent.Contains(i)) continue;
+                    var g = gens[i];
+                    if (g != null && g.amount >= 1.0)
+                    {
+                        _genSent.Add(i);
+                        Client.SendGenerator(i);
+                        Logger.LogInfo($"[AP] generator {i + 1} owned -> check");
+                    }
+                }
+            }
+        }
+        catch (System.Exception e) { Logger.LogError("[AP] generator check error: " + e.Message); }
 
         // Apply any queued filler/trap effects (score boost / slowdown).
         ItemEffects.ApplyPending(data);

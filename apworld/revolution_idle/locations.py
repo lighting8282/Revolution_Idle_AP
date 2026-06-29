@@ -14,6 +14,14 @@ if TYPE_CHECKING:
 ACH_COUNT = 520
 ACH_ID_BASE = 10_000
 
+# Base-layer generators (GameData.infinity.generators, GEN_COUNT=10). Owning each one is a check.
+GEN_COUNT = 10
+GEN_ID_BASE = 30_000
+
+
+def gen_location_name(index: int) -> str:
+    return f"Generator {index + 1}"
+
 # Achievement-id tiers from Const.ACH_RANGES, mapped to the tower regions they require.
 # (start_id, end_id_exclusive, region_name)
 TIERS: list[tuple[int, int, str]] = [
@@ -32,6 +40,9 @@ def ach_location_name(game_id: int) -> str:
 LOCATION_NAME_TO_ID: dict[str, int] = {
     ach_location_name(i): ACH_ID_BASE + i for i in range(ACH_COUNT)
 }
+LOCATION_NAME_TO_ID.update({
+    gen_location_name(i): GEN_ID_BASE + i for i in range(GEN_COUNT)
+})
 
 
 class RevolutionIdleLocation(Location):
@@ -76,6 +87,10 @@ def create_all_locations(world: RevolutionIdleWorld) -> None:
         names_to_ids = by_region[region_name]
         if names_to_ids:
             world.get_region(region_name).add_locations(names_to_ids, RevolutionIdleLocation)
+
+    # Generator checks (own each base generator) — reachable from the start, so they go in Menu.
+    gen_names = {gen_location_name(i): GEN_ID_BASE + i for i in range(GEN_COUNT)}
+    world.get_region("Menu").add_locations(gen_names, RevolutionIdleLocation)
 
     create_victory_event(world)
 

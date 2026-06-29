@@ -17,6 +17,8 @@ public class ArchipelagoClient
 {
     public const long AchIdBase = 10_000;
     public const int AchCount = 520; // normal achievements are 0..519; secrets live at 10000+ (no AP location)
+    public const long GenIdBase = 30_000;
+    public const int GenCount = 10;  // base generators (GameData.infinity.generators)
     public const string GameName = "Revolution Idle";
 
     private ArchipelagoSession? _session;
@@ -127,6 +129,15 @@ public class ArchipelagoClient
         if (gameAchId < 0 || gameAchId >= AchCount) return; // skip secret achievements (no AP location)
         try { _session.Locations.CompleteLocationChecks(AchIdBase + gameAchId); }
         catch (Exception e) { Plugin.Logger.LogError($"[AP] send location {gameAchId} failed: {e.Message}"); }
+    }
+
+    // Send a generator check (own generator #index).
+    public void SendGenerator(int index)
+    {
+        if (!Connected || _session == null) return;
+        if (index < 0 || index >= GenCount) return;
+        try { _session.Locations.CompleteLocationChecks(GenIdBase + index); }
+        catch (Exception e) { Plugin.Logger.LogError($"[AP] send generator {index} failed: {e.Message}"); }
     }
 
     // Resync: send every already-unlocked achievement id (called once after connecting).

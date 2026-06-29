@@ -12,6 +12,12 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.6.2] - 2026-06-29
+
+### Added
+- **Generator checks** — owning each of the 10 base generators is now a location check (10 new
+  checks, reachable from the start). Location pool is now 520 achievements + 10 generators.
+
 ## [0.6.1] - 2026-06-29
 
 ### Added
