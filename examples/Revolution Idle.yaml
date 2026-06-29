@@ -32,9 +32,9 @@ description: Default Revolution Idle Template
 
 game: Revolution Idle
 requires:
-  version: 0.6.8 # Version of Archipelago required for this yaml to work as expected.
+  version: 0.6.7 # Version of Archipelago required for this yaml to work as expected.
   game:
-    Revolution Idle: 0.4.0 # Version of the world required for this yaml to work as expected.
+    Revolution Idle: 0.5.0 # Version of the world required for this yaml to work as expected.
 
 Revolution Idle:
   ################

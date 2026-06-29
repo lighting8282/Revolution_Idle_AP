@@ -51,7 +51,7 @@ name: Player{number}
 description: My Revolution Idle run
 game: Revolution Idle
 requires:
-  version: 0.6.8
+  version: 0.6.7
 Revolution Idle:
   goal: unity              # infinity | eternity | unity | equality
   achievement_pool: 520    # 50-520; fewer = shorter run
