@@ -62,6 +62,10 @@ def stage_release() -> None:
     shutil.copytree(GAME / "BepInEx" / "plugins" / "RevolutionIdleAP",
                     bep_out / "plugins" / "RevolutionIdleAP")
 
+    # AP Mode launchers go into the game folder (next to Revolution Idle.exe).
+    for f in ["launch.ps1", "Play Revolution Idle (AP).bat", "Play Revolution Idle (Normal).bat"]:
+        shutil.copy2(ROOT / f, game_out / f)
+
     # extras
     shutil.copy2(ROOT / "reset-save.ps1", STAGE / "reset-save.ps1")
     shutil.copy2(ROOT / "RELEASE_README.md", STAGE / "README.md")

@@ -34,7 +34,9 @@ builds mod support, ~2–4 min), then press **F1** in-game to open the connectio
 - Full in-game integration: receiving an item unlocks the matching system (30 unlocks across 9 game
   classes); completing an achievement sends its check; goals are auto-detected.
 - In-game **F1 connection menu** (hostname/port/slot/password + status) — no config editing needed.
-- Save/seed binding warns if you connect a save that belongs to a different seed.
+- **AP Mode** — plays offline with an **isolated save** so AP never touches your normal (cloud) save,
+  and **auto-starts fresh per seed** (resumes the same seed). Launch via the bundled
+  `Play Revolution Idle (AP).bat`. It's effectively a separate "AP version" of the game.
 - Options: goal, trap chance, death link (no-op — the game has no death mechanic).
 
 ### YAML

@@ -41,14 +41,23 @@ Prefer it to connect automatically? The menu's defaults come from
 `BepInEx\config\com.jontrnka.revolutionidle.ap.cfg` — set `Host`/`Port`/`Slot` there and leave
 `Enabled = true` to auto-connect on launch. Set `Enabled = false` to only connect via the F1 menu.
 
-## 4. Start a fresh save (important)
+## 4. AP Mode — play AP as a separate "version" (recommended)
 
-Use a **new, empty save** for each seed so progression is actually gated by the randomizer:
+Revolution Idle keeps your save in the **cloud**, so it normally reloads your existing game. **AP
+Mode** runs the game **offline with its own isolated save**, so:
 
-- In-game: on the save screen choose **"Start a new save"**, or
-- Run the included `reset-save.ps1` (backs up your existing save first; `-Restore` to undo).
+- Your normal (cloud) save is never touched — it's a completely separate game.
+- Each **new seed automatically starts fresh**; reconnecting to the **same** seed resumes it.
 
-The mod warns in the log if you connect a save that was previously used with a different seed.
+Two ways to use it:
+
+- **Easiest:** launch with the included shortcut **`Play Revolution Idle (AP).bat`** (in the game
+  folder). Use **`Play Revolution Idle (Normal).bat`** (or Steam) for normal play.
+- **Manual:** set `Enabled = true` under `[AP Mode]` in
+  `BepInEx\config\com.jontrnka.revolutionidle.ap.cfg` (set `false` for normal play).
+
+> If you ever play **without** AP Mode and want a fresh slot, use the in-game **"Start a new save"**
+> (or `reset-save.ps1`). With AP Mode on you don't need to — it handles fresh starts for you.
 
 ---
 

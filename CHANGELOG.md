@@ -12,6 +12,19 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.6.0] - 2026-06-29
+
+### Added
+- **AP Mode** — a separate "AP version" of the game. When enabled, the mod runs the game **offline**
+  (blocks the Nakama cloud sync) and stores progress under an **isolated save** (`game_data_ap`), so:
+  - your normal cloud save is never read or written (fully separate), and
+  - each **new seed automatically starts fresh**, while reconnecting to the **same** seed resumes it.
+- Launchers `Play Revolution Idle (AP).bat` / `Play Revolution Idle (Normal).bat` to switch modes.
+
+### Notes
+- Needed because Revolution Idle restores its save from the cloud on every launch, which made
+  wiping the local save (or `reset-save.ps1`) ineffective for fresh starts.
+
 ## [0.5.0] - 2026-06-28
 
 ### Added
