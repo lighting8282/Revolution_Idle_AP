@@ -18,21 +18,10 @@ public static class CloudPatches
     }
 }
 
-// AP Mode: skip NakamaManager's Awake entirely. This is where the game kicks off the Steam-auth /
-// cloud-connect at startup (the source of the NullReferenceException spam). It's a plain void method
-// (reliably patchable, unlike the async connect chain) and runs after BepInEx has loaded the plugin,
-// so skipping it stops the whole cloud subsystem from ever starting. Normal play is untouched.
-[HarmonyPatch(typeof(NakamaManager), "InternalAwake")]
-public static class NakamaAwakePatch
-{
-    [HarmonyPrefix]
-    public static bool Prefix()
-    {
-        if (!Plugin.APMode) return true;
-        Plugin.Logger.LogInfo("[AP] AP Mode: skipped NakamaManager.InternalAwake (cloud disabled).");
-        return false;
-    }
-}
+// NOTE: skipping NakamaManager.InternalAwake was tried and REVERTED — it also skipped the Steam init
+// done there, causing a GetAuthSessionTicketAsync NRE from the separate Launcher.Launch -> Connect
+// path. The cloud connect has multiple entry points woven into async startup methods that Harmony
+// can't reliably intercept, so it can't be cleanly suppressed from the mod.
 
 // AP Mode: report no internet so the game never starts the Steam-auth / Nakama connect chain at all.
 // This is a plain bool getter (reliably patchable, unlike the async connect methods), and stopping the

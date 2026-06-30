@@ -20,6 +20,15 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
   color-coded (received = green, you-found = blue, hints = yellow, joins = light blue, goals = gold)
   and fade out after ~12s. Toggle with **F2**; default on (config: `[Overlay] Show Feed`).
 
+## [0.12.3] - 2026-06-30
+
+### Reverted
+- Reverted 0.12.1's `NakamaManager.InternalAwake` skip — it also skipped the Steam init done there,
+  causing a different NRE (`GetAuthSessionTicketAsync`) via the separate `Launcher.Launch` connect
+  path. The startup cloud error is the game's own offline cloud/Steam auth failing; it is caught by
+  the game ("Session failed to start") and AP play is unaffected. It can't be cleanly suppressed from
+  the mod because the connect runs through multiple async startup methods Harmony can't intercept.
+
 ## [0.12.2] - 2026-06-30
 
 ### Changed
