@@ -77,4 +77,5 @@ class RevolutionIdleWorld(World):
             "goal", "death_link", "generator_level_interval",
             "generators_goal_count", "generators_goal_level",
             "score_goal_exponent", "prestige_mult_goal_exponent", "achievement_count_goal",
+            "freeze_trap_seconds", "lag_trap_seconds", "generator_drain_levels",
         )

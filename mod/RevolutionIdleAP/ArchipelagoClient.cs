@@ -44,6 +44,11 @@ public class ArchipelagoClient
     public int PrestigeMultGoalExponent { get; private set; } = 30;
     public int AchievementCountGoal { get; private set; } = 250;
 
+    // From slot_data: trap effect tuning.
+    public int FreezeTrapSeconds { get; private set; } = 30;
+    public int LagTrapSeconds { get; private set; } = 60;
+    public int GeneratorDrainLevels { get; private set; } = 20;
+
     // Identity of the connected multiworld, used to detect a save being reused across seeds.
     public string Slot { get; private set; } = "";
     public string Seed { get; private set; } = "";
@@ -109,6 +114,12 @@ public class ArchipelagoClient
                 PrestigeMultGoalExponent = Convert.ToInt32(pme);
             if (success.SlotData != null && success.SlotData.TryGetValue("achievement_count_goal", out var acg) && acg != null)
                 AchievementCountGoal = Convert.ToInt32(acg);
+            if (success.SlotData != null && success.SlotData.TryGetValue("freeze_trap_seconds", out var fts) && fts != null)
+                FreezeTrapSeconds = Convert.ToInt32(fts);
+            if (success.SlotData != null && success.SlotData.TryGetValue("lag_trap_seconds", out var lts) && lts != null)
+                LagTrapSeconds = Convert.ToInt32(lts);
+            if (success.SlotData != null && success.SlotData.TryGetValue("generator_drain_levels", out var gdl) && gdl != null)
+                GeneratorDrainLevels = Convert.ToInt32(gdl);
             try { Seed = _session.RoomState?.Seed ?? ""; } catch { Seed = ""; }
             Status = $"Connected as {slot} (goal {Goal})";
             Plugin.Logger.LogInfo($"[AP] connected. goal={Goal} seed={Seed}");
@@ -144,6 +155,9 @@ public class ArchipelagoClient
                 case "Progressive Layer": UnlockState.AddProgressiveLayer(); break;
                 case "Score Boost": ItemEffects.QueueScoreBoost(); break;
                 case "Slowdown Trap": ItemEffects.QueueTrap(); break;
+                case "Freeze Trap": ItemEffects.QueueSlow(FreezeTrapSeconds, 0f); break;
+                case "Lag Trap": ItemEffects.QueueSlow(LagTrapSeconds, 0.5f); break;
+                case "Generator Drain Trap": ItemEffects.QueueGeneratorDrain(); break;
                 default: UnlockState.Grant(name); break;
             }
             Plugin.Logger.LogInfo($"[AP] received item: {name}");

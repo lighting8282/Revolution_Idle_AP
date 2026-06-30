@@ -17,7 +17,7 @@ public class Plugin : BasePlugin
 {
     public const string Guid = "com.jontrnka.revolutionidle.ap";
     public const string Name = "Revolution Idle Archipelago";
-    public const string Version = "0.9.0";
+    public const string Version = "0.10.0";
 
     internal static ManualLogSource Logger = null!;
     public static ArchipelagoClient? Client;

@@ -12,6 +12,17 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.10.0] - 2026-06-29
+
+### Added
+- **Three new trap types** (chosen at random when `trap_chance` rolls a trap, alongside the existing
+  Slowdown Trap):
+  - **Freeze Trap** — the whole game stops (`timeScale 0`) for `freeze_trap_seconds` (default 30).
+  - **Lag Trap** — the game runs at half speed for `lag_trap_seconds` (default 60).
+  - **Generator Drain Trap** — every base generator loses `generator_drain_levels` levels (default 20).
+- Freeze/Lag are driven off unscaled time so they always restore (even though they stop the normal
+  game clock), and the UI/connection menu stay usable during the effect.
+
 ## [0.9.0] - 2026-06-29
 
 ### Added

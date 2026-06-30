@@ -162,13 +162,41 @@ class ProgressiveLayers(Toggle):
 class TrapChance(Range):
     """Percentage chance that each filler item is replaced by a trap.
 
-    Filler grants ~60 seconds of your current income; traps remove ~120 seconds of progress.
+    When a trap is rolled, its type is chosen at random from: Slowdown (remove progress), Freeze
+    (everything stops), Generator Drain (generators lose levels), and Lag (everything at half speed).
     """
 
     display_name = "Trap Chance"
     range_start = 0
     range_end = 100
     default = 0
+
+
+class FreezeTrapSeconds(Range):
+    """Freeze Trap: how many seconds the game is fully frozen (timeScale 0)."""
+
+    display_name = "Freeze Trap: Seconds"
+    range_start = 1
+    range_end = 300
+    default = 30
+
+
+class LagTrapSeconds(Range):
+    """Lag Trap: how many seconds the game runs at half speed."""
+
+    display_name = "Lag Trap: Seconds"
+    range_start = 1
+    range_end = 600
+    default = 60
+
+
+class GeneratorDrainLevels(Range):
+    """Generator Drain Trap: how many levels each base generator loses (clamped at 0)."""
+
+    display_name = "Generator Drain Trap: Levels"
+    range_start = 1
+    range_end = 100
+    default = 20
 
 
 @dataclass
@@ -187,11 +215,15 @@ class RevolutionIdleOptions(PerGameCommonOptions):
     generator_level_interval: GeneratorLevelInterval
     progressive_layers: ProgressiveLayers
     trap_chance: TrapChance
+    freeze_trap_seconds: FreezeTrapSeconds
+    lag_trap_seconds: LagTrapSeconds
+    generator_drain_levels: GeneratorDrainLevels
     death_link: DeathLink
 
 
 option_groups = [
-    OptionGroup("General", [Goal, ProgressiveLayers, TrapChance]),
+    OptionGroup("General", [Goal, ProgressiveLayers]),
+    OptionGroup("Traps", [TrapChance, FreezeTrapSeconds, LagTrapSeconds, GeneratorDrainLevels]),
     OptionGroup("Goal Settings", [
         GeneratorsGoalCount, GeneratorsGoalLevel,
         ScoreGoalExponent, PrestigeMultGoalExponent, AchievementCountGoal,

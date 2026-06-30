@@ -58,6 +58,9 @@ ITEM_TABLE: dict[str, tuple[int, ItemClassification]] = {
     "Time Flux": (901, F),
     "Soul Cache": (902, F),
     "Slowdown Trap": (950, T),
+    "Freeze Trap": (951, T),
+    "Generator Drain Trap": (952, T),
+    "Lag Trap": (953, T),
 }
 
 ITEM_NAME_TO_ID: dict[str, int] = {name: data[0] for name, data in ITEM_TABLE.items()}
@@ -72,6 +75,8 @@ PROGRESSIVE_LAYER = "Progressive Layer"
 
 FILLER_ITEM_NAME = "Score Boost"
 TRAP_ITEM_NAME = "Slowdown Trap"
+# All trap types; when a filler slot rolls a trap, one of these is chosen at random.
+TRAP_ITEMS = ["Slowdown Trap", "Freeze Trap", "Generator Drain Trap", "Lag Trap"]
 
 # Items required to win under the "equality" goal (completionist): every unlock that isn't a
 # tower-region gate. Under that goal these are promoted to progression so fill places them reachably.
@@ -94,7 +99,7 @@ class RevolutionIdleItem(Item):
 
 def get_random_filler_item_name(world: RevolutionIdleWorld) -> str:
     if world.random.randint(0, 99) < world.options.trap_chance:
-        return TRAP_ITEM_NAME
+        return world.random.choice(TRAP_ITEMS)
     return FILLER_ITEM_NAME
 
 

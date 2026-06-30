@@ -16,6 +16,10 @@ public class RevApTicker : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F1))
             Plugin.ShowMenu = !Plugin.ShowMenu;
 
+        // Drive freeze/lag traps off unscaled time so they run (and self-restore) even at timeScale 0.
+        try { ItemEffects.UpdateTimeEffects(); }
+        catch (Exception e) { Plugin.Logger.LogError("[AP] time-effect error: " + e.Message); }
+
         _timer += Time.deltaTime;
         if (_timer < 1f) return;
         _timer = 0f;
