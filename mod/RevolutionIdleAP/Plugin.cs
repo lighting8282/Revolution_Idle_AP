@@ -17,7 +17,7 @@ public class Plugin : BasePlugin
 {
     public const string Guid = "com.jontrnka.revolutionidle.ap";
     public const string Name = "Revolution Idle Archipelago";
-    public const string Version = "0.11.0";
+    public const string Version = "0.11.1";
 
     internal static ManualLogSource Logger = null!;
     public static ArchipelagoClient? Client;
@@ -32,22 +32,32 @@ public class Plugin : BasePlugin
     public static bool APMode = false;
     private static ConfigEntry<bool> _apModeEntry = null!;
 
-    // In-game connection menu state (toggled with F1). Seeded from the config file.
+    // In-game connection menu state (toggled with F1). Seeded from the config file, and written back
+    // on connect so the last-entered values are remembered next launch.
     public static bool ShowMenu = true;
     public static string MenuHost = "archipelago.gg";
     public static string MenuPort = "38281";
     public static string MenuSlot = "Player1";
     public static string MenuPass = "";
 
+    private static ConfigEntry<string> _cfgHost = null!;
+    private static ConfigEntry<int> _cfgPort = null!;
+    private static ConfigEntry<string> _cfgSlot = null!;
+    private static ConfigEntry<string> _cfgPass = null!;
+
     public override void Load()
     {
         Logger = Log;
         Logger.LogInfo($"{Name} v{Version} loading...");
 
-        MenuHost = Config.Bind("Connection", "Host", "archipelago.gg", "Archipelago server host").Value;
-        MenuPort = Config.Bind("Connection", "Port", 38281, "Archipelago server port").Value.ToString();
-        MenuSlot = Config.Bind("Connection", "Slot", "Player1", "Slot / player name").Value;
-        MenuPass = Config.Bind("Connection", "Password", "", "Server password (blank if none)").Value;
+        _cfgHost = Config.Bind("Connection", "Host", "archipelago.gg", "Archipelago server host");
+        _cfgPort = Config.Bind("Connection", "Port", 38281, "Archipelago server port");
+        _cfgSlot = Config.Bind("Connection", "Slot", "Player1", "Slot / player name");
+        _cfgPass = Config.Bind("Connection", "Password", "", "Server password (blank if none). Stored in plaintext.");
+        MenuHost = _cfgHost.Value;
+        MenuPort = _cfgPort.Value.ToString();
+        MenuSlot = _cfgSlot.Value;
+        MenuPass = _cfgPass.Value;
         var enabled = Config.Bind("Connection", "Enabled", true, "Auto-connect on startup using the values above").Value;
         _apModeEntry = Config.Bind("AP Mode", "Enabled", false,
             "Run offline with an isolated save so AP play never touches your normal cloud save (and can start fresh per seed). Turn OFF for normal play.");
@@ -84,7 +94,21 @@ public class Plugin : BasePlugin
         }
         _resynced = false;
         _seedChecked = false;
+        SaveMenuToConfig(port);   // remember these values for next launch
         Client.ConnectAsync(MenuHost.Trim(), port, MenuSlot.Trim(), MenuPass);
+    }
+
+    // Persist the current menu field values to the BepInEx config (auto-saved to disk by BepInEx).
+    private static void SaveMenuToConfig(int port)
+    {
+        try
+        {
+            _cfgHost.Value = MenuHost.Trim();
+            _cfgPort.Value = port;
+            _cfgSlot.Value = MenuSlot.Trim();
+            _cfgPass.Value = MenuPass;
+        }
+        catch (System.Exception e) { Logger.LogError("[AP] save connection config failed: " + e.Message); }
     }
 
     // Flip AP Mode (persisted to config) and relaunch the game so the offline/save patches apply.

@@ -12,6 +12,13 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.11.1] - 2026-06-30
+
+### Changed
+- The F1 connection menu now **remembers the host / port / slot / password you last connected with**
+  (written back to the BepInEx config on connect, so they're prefilled next launch). The password is
+  stored in plaintext in the config file. Mod-only change; the apworld is functionally unchanged.
+
 ## [0.11.0] - 2026-06-29
 
 ### Added
