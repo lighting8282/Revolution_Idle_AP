@@ -23,6 +23,8 @@ public class ArchipelagoClient
     public const int SecretCount = 55;     // secret achievements: game ids 10000..10054 (opt-in locations)
     public const long GenIdBase = 30_000;
     public const int GenCount = 10;  // base generators (GameData.infinity.generators)
+    public const long GenLevelIdBase = 40_000;
+    public const int GenMaxLevel = 100; // each generator levels 1..100
     public const long AscIdBase = 50_000;
     public const int AscMaxMilestones = 200; // ascension-milestone locations: ids 50001..50200
     public const string GameName = "Revolution Idle";
@@ -33,6 +35,9 @@ public class ArchipelagoClient
     // Goal config (from slot_data): 0 = unity, 1 = equality. Detection lives in Plugin.IsGoalReached.
     public int Goal { get; private set; } = 0;
     public bool GoalSent { get; private set; }
+
+    // From slot_data: a generator-level check every N levels (0 = disabled).
+    public int GenLevelInterval { get; private set; } = 0;
 
     // From slot_data: ascension-milestone checks (count milestones, one per interval total levels).
     public int AscCheckCount { get; private set; } = 0;
@@ -109,6 +114,8 @@ public class ArchipelagoClient
             Connected = true;
             if (success.SlotData != null && success.SlotData.TryGetValue("goal", out var g) && g != null)
                 Goal = Convert.ToInt32(g);
+            if (success.SlotData != null && success.SlotData.TryGetValue("generator_level_interval", out var gli) && gli != null)
+                GenLevelInterval = Convert.ToInt32(gli);
             if (success.SlotData != null && success.SlotData.TryGetValue("ascension_check_count", out var acc) && acc != null)
                 AscCheckCount = Convert.ToInt32(acc);
             if (success.SlotData != null && success.SlotData.TryGetValue("ascension_check_interval", out var aci) && aci != null)
@@ -253,6 +260,15 @@ public class ArchipelagoClient
         if (index < 0 || index >= GenCount) return;
         try { _session.Locations.CompleteLocationChecks(GenIdBase + index); }
         catch (Exception e) { Plugin.Logger.LogError($"[AP] send generator {index} failed: {e.Message}"); }
+    }
+
+    // Send a generator-level check (generator #index reached level `level`).
+    public void SendGeneratorLevel(int index, int level)
+    {
+        if (!Connected || _session == null) return;
+        if (index < 0 || index >= GenCount || level < 1 || level > GenMaxLevel) return;
+        try { _session.Locations.CompleteLocationChecks(GenLevelIdBase + index * GenMaxLevel + level); }
+        catch (Exception e) { Plugin.Logger.LogError($"[AP] send generator {index} level {level} failed: {e.Message}"); }
     }
 
     // Send an ascension-milestone check (the k-th milestone, k = 1..AscMaxMilestones).

@@ -29,7 +29,8 @@ builds mod support, ~2–4 min), then press **F1** in-game to open the connectio
   checks with `achievements_base` / `achievements_infinity` / `achievements_eternity` /
   `achievements_unity` (defaults = the full 520).
 - Optional **55 secret achievements** (`secret_achievements`).
-- **10 generator** checks (own each base generator).
+- **10 generator** checks (own each base generator), plus optional **per-level** checks every N
+  levels on each generator (`generator_level_interval`).
 - Optional **ascension-milestone** checks — one per `ascension_check_interval` total ascension
   levels, up to `ascension_check_count` of them. Filler-only by default
   (`ascension_checks_progression` lets them hold progression).
@@ -90,6 +91,7 @@ Revolution Idle:
   secret_achievements: false  # add the 55 secret achievements
   ascension_check_count: 0    # 0 = off; else a check every `ascension_check_interval` total ascension levels
   ascension_check_interval: 500
+  generator_level_interval: 0 # 0 = off; else a check every N levels on each of the 10 generators
   progressive_layers: false
   trap_chance: 10             # 0-100; when a trap rolls, its type is random
   death_link: false

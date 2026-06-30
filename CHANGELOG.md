@@ -20,6 +20,13 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
   color-coded (received = green, you-found = blue, hints = yellow, joins = light blue, goals = gold)
   and fade out after ~12s. Toggle with **F2**; default on (config: `[Overlay] Show Feed`).
 
+## [0.15.0] - 2026-06-30
+
+### Added
+- **Generator-level checks are back** (`generator_level_interval`) — a check every N levels on each
+  of the 10 base generators, alongside the ascension-milestone checks. Both can be used together.
+  (0.14.0 had removed these; the `generators` goal stays replaced by `ascension`.)
+
 ## [0.14.0] - 2026-06-30
 
 ### Added

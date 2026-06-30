@@ -17,7 +17,7 @@ public class Plugin : BasePlugin
 {
     public const string Guid = "com.jontrnka.revolutionidle.ap";
     public const string Name = "Revolution Idle Archipelago";
-    public const string Version = "0.14.0";
+    public const string Version = "0.15.0";
 
     internal static ManualLogSource Logger = null!;
     public static ArchipelagoClient? Client;
@@ -25,6 +25,7 @@ public class Plugin : BasePlugin
     private static bool _seedChecked;
     private static bool _freshChecked;
     private static readonly HashSet<int> _genSent = new();
+    private static readonly HashSet<long> _genLevelSent = new(); // key = genIndex * 1000 + level
     private static readonly HashSet<int> _ascSent = new(); // ascension milestone indices already sent
 
     // AP Mode: run offline (cloud blocked) + isolated save so AP play never touches your normal
@@ -204,14 +205,34 @@ public class Plugin : BasePlugin
             if (gens != null)
             {
                 int n = gens.Count;
+                int interval = Client.GenLevelInterval;
                 for (int i = 0; i < n && i < ArchipelagoClient.GenCount; i++)
                 {
                     var g = gens[i];
-                    if (g != null && !_genSent.Contains(i) && g.amount >= 1.0)
+                    if (g == null) continue;
+
+                    // Own check: first time this generator has any amount.
+                    if (!_genSent.Contains(i) && g.amount >= 1.0)
                     {
                         _genSent.Add(i);
                         Client.SendGenerator(i);
                         Logger.LogInfo($"[AP] generator {i + 1} owned -> check");
+                    }
+
+                    // Level checks: a check at every `interval` levels (amount is the level, 1..100).
+                    if (interval > 0)
+                    {
+                        int lvl = (int)System.Math.Floor(g.amount);
+                        if (lvl > ArchipelagoClient.GenMaxLevel) lvl = ArchipelagoClient.GenMaxLevel;
+                        for (int m = interval; m <= lvl; m += interval)
+                        {
+                            long key = (long)i * 1000 + m;
+                            if (_genLevelSent.Add(key))
+                            {
+                                Client.SendGeneratorLevel(i, m);
+                                Logger.LogInfo($"[AP] generator {i + 1} reached level {m} -> check");
+                            }
+                        }
                     }
                 }
             }

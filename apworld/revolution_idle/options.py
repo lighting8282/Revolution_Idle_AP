@@ -159,6 +159,21 @@ class AscensionChecksProgression(Toggle):
     display_name = "Ascension Checks Can Hold Progression"
 
 
+class GeneratorLevelInterval(Range):
+    """
+    Add a location check every N levels on each of the 10 base generators (each generator levels up
+    as you buy it, from 1 to 100).
+
+    0 disables generator-level checks. Otherwise you get a check at level N, 2N, 3N ... up to 100 on
+    every generator. Example: 25 -> checks at 25/50/75/100 (4 per generator, 40 total); 10 -> 100 total.
+    """
+
+    display_name = "Generator Level Interval"
+    range_start = 0
+    range_end = 100
+    default = 0
+
+
 class ProgressiveLayers(Toggle):
     """
     Replace the separate Infinity/Eternity/Unity unlock items with three "Progressive Layer" items
@@ -250,6 +265,7 @@ class RevolutionIdleOptions(PerGameCommonOptions):
     ascension_check_count: AscensionCheckCount
     ascension_check_interval: AscensionCheckInterval
     ascension_checks_progression: AscensionChecksProgression
+    generator_level_interval: GeneratorLevelInterval
     progressive_layers: ProgressiveLayers
     trap_chance: TrapChance
     freeze_trap_seconds: FreezeTrapSeconds
@@ -275,4 +291,5 @@ option_groups = [
     OptionGroup("Ascension Checks", [
         AscensionCheckCount, AscensionCheckInterval, AscensionChecksProgression,
     ]),
+    OptionGroup("Generator Checks", [GeneratorLevelInterval]),
 ]
