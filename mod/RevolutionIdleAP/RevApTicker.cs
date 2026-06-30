@@ -85,7 +85,7 @@ public class RevApTicker : MonoBehaviour
         var all = ApFeed.Snapshot();
         if (all.Count == 0) return;
 
-        _feedStyle ??= new GUIStyle(GUI.skin.label) { wordWrap = true, fontSize = 12, alignment = TextAnchor.UpperLeft };
+        _feedStyle ??= new GUIStyle(GUI.skin.label) { wordWrap = true, fontSize = 13, fontStyle = FontStyle.Bold, alignment = TextAnchor.UpperLeft };
 
         var now = DateTime.UtcNow;
         var visible = new System.Collections.Generic.List<ApFeed.Entry>();
@@ -97,7 +97,6 @@ public class RevApTicker : MonoBehaviour
         visible.Reverse(); // oldest at top, newest at bottom
 
         const float w = 460f, pad = 8f, margin = 12f;
-        float x = Screen.width - w - margin, y = margin;
 
         var heights = new float[visible.Count];
         float total = 0f;
@@ -107,8 +106,12 @@ public class RevApTicker : MonoBehaviour
             total += heights[i] + 2f;
         }
 
+        float boxH = total + pad * 2f;
+        float x = margin;                                  // bottom-left
+        float y = Screen.height - boxH - margin;
+
         GUI.color = new Color(0f, 0f, 0f, 0.55f);
-        GUI.Box(new Rect(x, y, w, total + pad * 2f), GUIContent.none);
+        GUI.Box(new Rect(x, y, w, boxH), GUIContent.none);
 
         float yy = y + pad;
         for (int i = 0; i < visible.Count; i++)

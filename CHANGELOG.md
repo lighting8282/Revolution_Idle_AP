@@ -20,6 +20,12 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
   color-coded (received = green, you-found = blue, hints = yellow, joins = light blue, goals = gold)
   and fade out after ~12s. Toggle with **F2**; default on (config: `[Overlay] Show Feed`).
 
+## [0.12.2] - 2026-06-30
+
+### Changed
+- **Message feed overlay** moved to the **bottom-left** corner and the text is now **bold** (slightly
+  larger) for readability.
+
 ## [0.12.1] - 2026-06-30
 
 ### Fixed
