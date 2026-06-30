@@ -12,6 +12,14 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.11.2] - 2026-06-30
+
+### Fixed
+- **AP Mode startup crash spam** — the game's Nakama cloud manager threw a `NullReferenceException`
+  (red `[SERVER][ERROR]` text) on launch in AP Mode, because it still ran the full Steam-auth/session
+  chain while we forced it offline. AP Mode now also short-circuits `NakamaManager.SteamAuth` and
+  `Initialize`, so the cloud chain never runs offline. Normal play is unaffected.
+
 ## [0.11.1] - 2026-06-30
 
 ### Changed
