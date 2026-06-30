@@ -29,8 +29,10 @@ builds mod support, ~2–4 min), then press **F1** in-game to open the connectio
   checks with `achievements_base` / `achievements_infinity` / `achievements_eternity` /
   `achievements_unity` (defaults = the full 520).
 - Optional **55 secret achievements** (`secret_achievements`).
-- **10 generator** checks (own each base generator), plus optional **per-level** checks every N
-  levels on each generator (`generator_level_interval`).
+- **10 generator** checks (own each base generator).
+- Optional **ascension-milestone** checks — one per `ascension_check_interval` total ascension
+  levels, up to `ascension_check_count` of them. Filler-only by default
+  (`ascension_checks_progression` lets them hold progression).
 
 **Items**
 - Prestige-tower unlocks (Infinity / Eternity / Unity — or three `progressive_layers` items),
@@ -42,7 +44,7 @@ builds mod support, ~2–4 min), then press **F1** in-game to open the connectio
 **Goals** (all auto-detected in-game):
 - `unity`, `eternity`, `infinity` — reach that layer.
 - `equality` — reach Unity, collect every unlock, earn Equality currency (completionist).
-- `generators` — get N base generators to a target level.
+- `ascension` — reach a target total ascension level (summed across all revolutions).
 - `score` / `prestige_mult` — reach 10^N Score / prestige multiplier.
 - `achievement_count` — unlock N achievements in-game.
 
@@ -79,14 +81,15 @@ game: Revolution Idle
 requires:
   version: 0.6.7
 Revolution Idle:
-  goal: unity                 # unity|equality|infinity|eternity|generators|score|prestige_mult|achievement_count
+  goal: unity                 # unity|equality|infinity|eternity|ascension|score|prestige_mult|achievement_count
   # how many achievements per tier become checks (defaults shown = all 520)
   achievements_base: 30       # 0-30
   achievements_infinity: 40   # 0-40
   achievements_eternity: 91   # 0-91
   achievements_unity: 359     # 0-359
   secret_achievements: false  # add the 55 secret achievements
-  generator_level_interval: 0 # 0 = off; else a check every N levels on each of the 10 generators
+  ascension_check_count: 0    # 0 = off; else a check every `ascension_check_interval` total ascension levels
+  ascension_check_interval: 500
   progressive_layers: false
   trap_chance: 10             # 0-100; when a trap rolls, its type is random
   death_link: false
