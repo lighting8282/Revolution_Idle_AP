@@ -12,6 +12,21 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.7.0] - 2026-06-29
+
+### Added
+- **Per-tier achievement options** — the 520 achievements are split into the game's own categories,
+  each with its own count slider:
+  - `achievements_base` (0–30), `achievements_infinity` (0–40), `achievements_eternity` (0–91),
+    `achievements_unity` (0–359). Defaults are each tier's full size, so the default is still all 520.
+- **`secret_achievements` toggle** — adds the 55 secret achievements (ids 10000–10054) as checks.
+  They have obscure requirements, so they're gated behind the Unity layer and off by default.
+
+### Changed
+- **Breaking (options):** `achievement_pool` is removed in favor of the four per-tier counts above.
+  Existing YAMLs using `achievement_pool` should switch to the per-tier options (location/item IDs
+  are unchanged, so this is purely a YAML change).
+
 ## [0.6.3] - 2026-06-29
 
 ### Added

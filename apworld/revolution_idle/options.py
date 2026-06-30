@@ -23,19 +23,57 @@ class Goal(Choice):
     default = option_unity
 
 
-class AchievementPool(Range):
-    """
-    How many of the game's 520 achievements are used as location checks.
+# The game splits its 520 achievements into tiers (Const.ACH_RANGES), each tied to a prestige layer.
+# Each option below picks how many achievements from that tier become checks (sampled deterministically).
+# Defaults are the full size of each tier, so out of the box you get all 520 (same as before).
 
-    Lower values make for a shorter, faster run; the full 520 is a long async. Checks are sampled
-    across all progression tiers (with a guaranteed handful in the early tier), so gating is
-    preserved at any size.
+
+class AchievementsBase(Range):
+    """How many Base / Prestige achievements (ids 0-29, reachable from the start) become checks."""
+
+    display_name = "Base Achievements"
+    range_start = 0
+    range_end = 30
+    default = 30
+
+
+class AchievementsInfinity(Range):
+    """How many Infinity-tier achievements (ids 30-69, need the Infinity layer) become checks."""
+
+    display_name = "Infinity Achievements"
+    range_start = 0
+    range_end = 40
+    default = 40
+
+
+class AchievementsEternity(Range):
+    """How many Eternity-tier achievements (ids 70-160, need the Eternity layer) become checks."""
+
+    display_name = "Eternity Achievements"
+    range_start = 0
+    range_end = 91
+    default = 91
+
+
+class AchievementsUnity(Range):
+    """How many Unity-tier achievements (ids 161-519, need the Unity layer) become checks."""
+
+    display_name = "Unity Achievements"
+    range_start = 0
+    range_end = 359
+    default = 359
+
+
+class SecretAchievements(Toggle):
+    """
+    Add the 55 secret achievements (ids 10000-10054) as checks.
+
+    These are cryptic / hard to get, so they're treated as deep-game checks (gated behind the Unity
+    layer) and are off by default. Note: every check needs an item, so very low achievement counts
+    combined with this off may leave fewer locations than the ~36 required unlock items.
     """
 
-    display_name = "Achievement Pool Size"
-    range_start = 50
-    range_end = 520
-    default = 520
+    display_name = "Secret Achievements"
 
 
 class GeneratorLevelInterval(Range):
@@ -78,7 +116,11 @@ class TrapChance(Range):
 @dataclass
 class RevolutionIdleOptions(PerGameCommonOptions):
     goal: Goal
-    achievement_pool: AchievementPool
+    achievements_base: AchievementsBase
+    achievements_infinity: AchievementsInfinity
+    achievements_eternity: AchievementsEternity
+    achievements_unity: AchievementsUnity
+    secret_achievements: SecretAchievements
     generator_level_interval: GeneratorLevelInterval
     progressive_layers: ProgressiveLayers
     trap_chance: TrapChance
@@ -86,5 +128,10 @@ class RevolutionIdleOptions(PerGameCommonOptions):
 
 
 option_groups = [
-    OptionGroup("General", [Goal, AchievementPool, GeneratorLevelInterval, ProgressiveLayers, TrapChance]),
+    OptionGroup("General", [Goal, ProgressiveLayers, TrapChance]),
+    OptionGroup("Achievement Checks", [
+        AchievementsBase, AchievementsInfinity, AchievementsEternity, AchievementsUnity,
+        SecretAchievements,
+    ]),
+    OptionGroup("Generator Checks", [GeneratorLevelInterval]),
 ]

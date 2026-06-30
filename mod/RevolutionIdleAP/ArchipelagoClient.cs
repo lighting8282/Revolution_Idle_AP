@@ -16,7 +16,9 @@ namespace RevolutionIdleAP;
 public class ArchipelagoClient
 {
     public const long AchIdBase = 10_000;
-    public const int AchCount = 520; // normal achievements are 0..519; secrets live at 10000+ (no AP location)
+    public const int AchCount = 520;       // normal achievements: game ids 0..519
+    public const int SecretGameIdBase = 10_000;
+    public const int SecretCount = 55;     // secret achievements: game ids 10000..10054 (opt-in locations)
     public const long GenIdBase = 30_000;
     public const int GenCount = 10;  // base generators (GameData.infinity.generators)
     public const long GenLevelIdBase = 40_000;
@@ -129,11 +131,18 @@ public class ArchipelagoClient
         }
     }
 
+    // A normal (0..519) or secret (10000..10054) achievement game id. Both map to a location via
+    // AchIdBase + id (normal -> 10000..10519, secret -> 20000..20054). If the seed didn't include a
+    // given achievement (per-tier counts / secrets toggle), the server simply ignores the check.
+    private static bool IsAchId(int id) =>
+        (id >= 0 && id < AchCount) ||
+        (id >= SecretGameIdBase && id < SecretGameIdBase + SecretCount);
+
     // Send one achievement (game id) as an AP location check.
     public void SendAchievement(int gameAchId)
     {
         if (!Connected || _session == null) return;
-        if (gameAchId < 0 || gameAchId >= AchCount) return; // skip secret achievements (no AP location)
+        if (!IsAchId(gameAchId)) return;
         try { _session.Locations.CompleteLocationChecks(AchIdBase + gameAchId); }
         catch (Exception e) { Plugin.Logger.LogError($"[AP] send location {gameAchId} failed: {e.Message}"); }
     }
@@ -160,7 +169,7 @@ public class ArchipelagoClient
     public void SendAchievements(IEnumerable<int> gameAchIds)
     {
         if (!Connected || _session == null) return;
-        long[] ids = gameAchIds.Where(i => i >= 0 && i < AchCount).Select(i => AchIdBase + i).ToArray();
+        long[] ids = gameAchIds.Where(IsAchId).Select(i => AchIdBase + i).ToArray();
         if (ids.Length == 0) return;
         try
         {

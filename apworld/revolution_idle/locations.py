@@ -10,9 +10,14 @@ from .items import RevolutionIdleItem
 if TYPE_CHECKING:
     from .world import RevolutionIdleWorld
 
-# Mirrors GameData.ACH_COUNT (normal achievements; secrets at id 10000+ are not used as locations).
+# Mirrors GameData.ACH_COUNT (normal achievements). Location id = ACH_ID_BASE + game_id, which also
+# works for secrets (game ids 10000-10054 -> location ids 20000-20054).
 ACH_COUNT = 520
 ACH_ID_BASE = 10_000
+
+# Secret achievements (Const.ACH_SECRET_COUNT = 55, game ids 10000..10054). Opt-in via option.
+SECRET_COUNT = 55
+SECRET_GAME_ID_BASE = 10_000
 
 # Base-layer generators (GameData.infinity.generators, GEN_COUNT=10). Owning each one is a check.
 GEN_COUNT = 10
@@ -36,24 +41,41 @@ def gen_level_location_id(index: int, level: int) -> int:
     # 40000 + gen*100 + level  -> stable, collision-free (gen 0 lvl 1 = 40001 .. gen 9 lvl 100 = 41000)
     return GEN_LEVEL_ID_BASE + index * GEN_MAX_LEVEL + level
 
-# Achievement-id tiers from Const.ACH_RANGES, mapped to the tower regions they require.
-# (start_id, end_id_exclusive, region_name)
-TIERS: list[tuple[int, int, str]] = [
-    (0, 30, "Menu"),       # base/prestige tier
-    (30, 70, "Infinity"),
-    (70, 161, "Eternity"),
-    (161, 520, "Unity"),
+# Achievement-id tiers from Const.ACH_RANGES, mapped to the tower regions they require and the
+# per-tier count option that controls how many of them become checks.
+# (start_id, end_id_exclusive, region_name, option_attr)
+TIERS: list[tuple[int, int, str, str]] = [
+    (0, 30, "Menu", "achievements_base"),         # base/prestige tier
+    (30, 70, "Infinity", "achievements_infinity"),
+    (70, 161, "Eternity", "achievements_eternity"),
+    (161, 520, "Unity", "achievements_unity"),
 ]
+
+# Secret achievements have unknown/obscure requirements; gate them behind the deepest layer so AP
+# only ever expects them once everything is unlocked (a safe over-approximation of reachability).
+SECRET_REGION = "Unity"
 
 
 def ach_location_name(game_id: int) -> str:
     return f"Achievement #{game_id}"
 
 
+def secret_location_name(index: int) -> str:
+    return f"Secret Achievement {index + 1}"
+
+
+def secret_location_id(index: int) -> int:
+    # game id 10000+index -> location id ACH_ID_BASE + game_id = 20000+index
+    return ACH_ID_BASE + SECRET_GAME_ID_BASE + index
+
+
 # Full, stable location_name_to_id (every location that could ever exist).
 LOCATION_NAME_TO_ID: dict[str, int] = {
     ach_location_name(i): ACH_ID_BASE + i for i in range(ACH_COUNT)
 }
+LOCATION_NAME_TO_ID.update({
+    secret_location_name(i): secret_location_id(i) for i in range(SECRET_COUNT)
+})
 LOCATION_NAME_TO_ID.update({
     gen_location_name(i): GEN_ID_BASE + i for i in range(GEN_COUNT)
 })
@@ -77,44 +99,34 @@ class RevolutionIdleLocation(Location):
     game = "Revolution Idle"
 
 
-def selected_achievement_ids(world: RevolutionIdleWorld) -> list[int]:
-    """Pick which achievements become checks, honoring the achievement_pool size.
+def selected_achievement_ids(world: RevolutionIdleWorld) -> dict[str, list[int]]:
+    """Per tier, sample the requested number of achievement ids (deterministically via world.random).
 
-    Always includes a few early (Menu-tier) achievements so there's a reachable foothold at the
-    start, then samples the rest across all tiers (deterministically via world.random)."""
-    n = world.options.achievement_pool.value
-    if n >= ACH_COUNT:
-        return list(range(ACH_COUNT))
-
+    Returns {region_name: [game_ids]}."""
     rng = world.random
-    menu_ids = list(range(0, 30))
-    rng.shuffle(menu_ids)
-    floor = min(len(menu_ids), n, 8)
-    chosen = set(menu_ids[:floor])
-
-    rest = [i for i in range(ACH_COUNT) if i not in chosen]
-    rng.shuffle(rest)
-    for i in rest:
-        if len(chosen) >= n:
-            break
-        chosen.add(i)
-    return sorted(chosen)
+    by_region: dict[str, list[int]] = {}
+    for start, end, region_name, option_attr in TIERS:
+        n = getattr(world.options, option_attr).value
+        ids = list(range(start, end))
+        if n < len(ids):
+            rng.shuffle(ids)
+            ids = sorted(ids[:n])
+        by_region.setdefault(region_name, []).extend(ids)
+    return by_region
 
 
 def create_all_locations(world: RevolutionIdleWorld) -> None:
-    ids = selected_achievement_ids(world)
+    by_region = selected_achievement_ids(world)
 
-    by_region: dict[str, dict[str, int]] = {region_name: {} for _, _, region_name in TIERS}
-    for gid in ids:
-        for start, end, region_name in TIERS:
-            if start <= gid < end:
-                by_region[region_name][ach_location_name(gid)] = ACH_ID_BASE + gid
-                break
-
-    for _, _, region_name in TIERS:
-        names_to_ids = by_region[region_name]
+    for region_name, ids in by_region.items():
+        names_to_ids = {ach_location_name(gid): ACH_ID_BASE + gid for gid in ids}
         if names_to_ids:
             world.get_region(region_name).add_locations(names_to_ids, RevolutionIdleLocation)
+
+    # Secret achievements (opt-in) — gated behind the deepest layer.
+    if world.options.secret_achievements:
+        secret_names = {secret_location_name(i): secret_location_id(i) for i in range(SECRET_COUNT)}
+        world.get_region(SECRET_REGION).add_locations(secret_names, RevolutionIdleLocation)
 
     # Generator checks (own each base generator) — reachable from the start, so they go in Menu.
     gen_names = {gen_location_name(i): GEN_ID_BASE + i for i in range(GEN_COUNT)}
