@@ -12,6 +12,18 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.9.0] - 2026-06-29
+
+### Added
+- **Three new goals:**
+  - `score` — reach a Score of 10^N (`score_goal_exponent`, default 100). Base-tier.
+  - `prestige_mult` — reach a prestige multiplier of 10^N (`prestige_mult_goal_exponent`, default 30).
+    Base-tier.
+  - `achievement_count` — unlock a target number of in-game achievements (`achievement_count_goal`,
+    default 250). The win region is gated by the target (higher counts need deeper layers).
+- The full goal list is now: unity, equality, infinity, eternity, generators, score, prestige_mult,
+  achievement_count.
+
 ## [0.8.0] - 2026-06-29
 
 ### Added

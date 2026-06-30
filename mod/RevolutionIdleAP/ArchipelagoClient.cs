@@ -39,6 +39,11 @@ public class ArchipelagoClient
     public int GenGoalCount { get; private set; } = 10;
     public int GenGoalLevel { get; private set; } = 100;
 
+    // From slot_data: thresholds for the score / prestige_mult / achievement_count goals.
+    public int ScoreGoalExponent { get; private set; } = 100;
+    public int PrestigeMultGoalExponent { get; private set; } = 30;
+    public int AchievementCountGoal { get; private set; } = 250;
+
     // Identity of the connected multiworld, used to detect a save being reused across seeds.
     public string Slot { get; private set; } = "";
     public string Seed { get; private set; } = "";
@@ -98,6 +103,12 @@ public class ArchipelagoClient
                 GenGoalCount = Convert.ToInt32(ggc);
             if (success.SlotData != null && success.SlotData.TryGetValue("generators_goal_level", out var ggl) && ggl != null)
                 GenGoalLevel = Convert.ToInt32(ggl);
+            if (success.SlotData != null && success.SlotData.TryGetValue("score_goal_exponent", out var sge) && sge != null)
+                ScoreGoalExponent = Convert.ToInt32(sge);
+            if (success.SlotData != null && success.SlotData.TryGetValue("prestige_mult_goal_exponent", out var pme) && pme != null)
+                PrestigeMultGoalExponent = Convert.ToInt32(pme);
+            if (success.SlotData != null && success.SlotData.TryGetValue("achievement_count_goal", out var acg) && acg != null)
+                AchievementCountGoal = Convert.ToInt32(acg);
             try { Seed = _session.RoomState?.Seed ?? ""; } catch { Seed = ""; }
             Status = $"Connected as {slot} (goal {Goal})";
             Plugin.Logger.LogInfo($"[AP] connected. goal={Goal} seed={Seed}");

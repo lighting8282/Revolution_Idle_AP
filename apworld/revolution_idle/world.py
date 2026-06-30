@@ -33,11 +33,24 @@ class RevolutionIdleWorld(World):
         ri_options.Goal.option_unity: "Unity",
         ri_options.Goal.option_equality: "Unity",
         ri_options.Goal.option_generators: "Menu",  # maxing base generators is base-tier
+        ri_options.Goal.option_score: "Menu",        # score grind is base-tier
+        ri_options.Goal.option_prestige_mult: "Menu",
     }
+
+    # Cumulative achievements obtainable once each layer is unlocked (Base 30, +Infinity=70,
+    # +Eternity=161, +Unity=520). Used to gate the achievement_count goal's win region.
+    _ACH_COUNT_GATES = [(30, "Menu"), (70, "Infinity"), (161, "Eternity"), (520, "Unity")]
 
     @property
     def goal_region_name(self) -> str:
-        return self.GOAL_REGION[self.options.goal.value]
+        g = self.options.goal.value
+        if g == ri_options.Goal.option_achievement_count:
+            n = self.options.achievement_count_goal.value
+            for threshold, region in self._ACH_COUNT_GATES:
+                if n <= threshold:
+                    return region
+            return "Unity"
+        return self.GOAL_REGION[g]
 
     @property
     def is_equality_goal(self) -> bool:
@@ -63,4 +76,5 @@ class RevolutionIdleWorld(World):
         return self.options.as_dict(
             "goal", "death_link", "generator_level_interval",
             "generators_goal_count", "generators_goal_level",
+            "score_goal_exponent", "prestige_mult_goal_exponent", "achievement_count_goal",
         )

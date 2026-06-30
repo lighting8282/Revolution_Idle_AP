@@ -34,7 +34,7 @@ game: Revolution Idle
 requires:
   version: 0.6.7 # Version of Archipelago required for this yaml to work as expected.
   game:
-    Revolution Idle: 0.8.0 # Version of the world required for this yaml to work as expected.
+    Revolution Idle: 0.9.0 # Version of the world required for this yaml to work as expected.
 
 Revolution Idle:
   ################
@@ -82,12 +82,41 @@ Revolution Idle:
     # equality: reach Unity, collect every unlock, and earn Equality currency (longest / completionist).
     # generators: get a number of base generators to a target upgrade level (see the two
     #     generators_goal_* options). Base-tier grind goal; reachable from the start.
+    # score: reach a target Score of 10^N (see score_goal_exponent). Base-tier.
+    # prestige_mult: reach a target prestige multiplier of 10^N (see prestige_mult_goal_exponent).
+    # achievement_count: unlock a target number of achievements in-game (see achievement_count_goal).
     unity: 50
     equality: 0
     infinity: 0
     eternity: 0
     generators: 0
+    score: 0
+    prestige_mult: 0
+    achievement_count: 0
 
+  progressive_layers:
+    # Replace the separate Infinity/Eternity/Unity unlock items with three "Progressive Layer" items
+    # that unlock the next layer in order (1st -> Infinity, 2nd -> Eternity, 3rd -> Unity).
+    'false': 50
+    'true': 0
+
+  trap_chance:
+    # Percentage chance that each filler item is replaced by a trap.
+    # 
+    # Filler grants ~60 seconds of your current income; traps remove ~120 seconds of progress.
+    #
+    # You can define additional values between the minimum and maximum values.
+    # Minimum value is 0
+    # Maximum value is 100
+    0: 50
+    random: 0
+    random-low: 0 # random value weighted towards lower values
+    random-high: 0 # random value weighted towards higher values
+    random-range-0-100: 0 # random value between 0 and 100
+
+  #################
+  # Goal Settings #
+  #################
   generators_goal_count:
     # For the `generators` goal: how many base generators must reach the target level (1-10).
     #
@@ -112,25 +141,44 @@ Revolution Idle:
     random-high: 0 # random value weighted towards higher values
     random-range-1-100: 0 # random value between 1 and 100
 
-  progressive_layers:
-    # Replace the separate Infinity/Eternity/Unity unlock items with three "Progressive Layer" items
-    # that unlock the next layer in order (1st -> Infinity, 2nd -> Eternity, 3rd -> Unity).
-    'false': 50
-    'true': 0
-
-  trap_chance:
-    # Percentage chance that each filler item is replaced by a trap.
-    # 
-    # Filler grants ~60 seconds of your current income; traps remove ~120 seconds of progress.
+  score_goal_exponent:
+    # For the `score` goal: reach a Score of 10^N. Higher N = much longer run (it's an exponent).
     #
     # You can define additional values between the minimum and maximum values.
-    # Minimum value is 0
-    # Maximum value is 100
-    0: 50
+    # Minimum value is 6
+    # Maximum value is 9000
+    100: 50
     random: 0
     random-low: 0 # random value weighted towards lower values
     random-high: 0 # random value weighted towards higher values
-    random-range-0-100: 0 # random value between 0 and 100
+    random-range-6-9000: 0 # random value between 6 and 9000
+
+  prestige_mult_goal_exponent:
+    # For the `prestige_mult` goal: reach a prestige multiplier of 10^N.
+    #
+    # You can define additional values between the minimum and maximum values.
+    # Minimum value is 1
+    # Maximum value is 9000
+    30: 50
+    random: 0
+    random-low: 0 # random value weighted towards lower values
+    random-high: 0 # random value weighted towards higher values
+    random-range-1-9000: 0 # random value between 1 and 9000
+
+  achievement_count_goal:
+    # For the `achievement_count` goal: how many achievements you must unlock in-game (1-520).
+    # 
+    # This counts your real in-game achievement unlocks (independent of how many are AP checks). The
+    # win region is gated by the count: higher targets require the deeper prestige layers to reach.
+    #
+    # You can define additional values between the minimum and maximum values.
+    # Minimum value is 1
+    # Maximum value is 520
+    250: 50
+    random: 0
+    random-low: 0 # random value weighted towards lower values
+    random-high: 0 # random value weighted towards higher values
+    random-range-1-520: 0 # random value between 1 and 520
 
   ######################
   # Achievement Checks #

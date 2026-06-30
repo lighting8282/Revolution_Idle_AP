@@ -13,6 +13,9 @@ class Goal(Choice):
     equality: reach Unity, collect every unlock, and earn Equality currency (longest / completionist).
     generators: get a number of base generators to a target upgrade level (see the two
         generators_goal_* options). Base-tier grind goal; reachable from the start.
+    score: reach a target Score of 10^N (see score_goal_exponent). Base-tier.
+    prestige_mult: reach a target prestige multiplier of 10^N (see prestige_mult_goal_exponent).
+    achievement_count: unlock a target number of achievements in-game (see achievement_count_goal).
     """
 
     display_name = "Goal"
@@ -23,6 +26,9 @@ class Goal(Choice):
     option_infinity = 2
     option_eternity = 3
     option_generators = 4
+    option_score = 5
+    option_prestige_mult = 6
+    option_achievement_count = 7
     default = option_unity
 
 
@@ -42,6 +48,37 @@ class GeneratorsGoalLevel(Range):
     range_start = 1
     range_end = 100
     default = 100
+
+
+class ScoreGoalExponent(Range):
+    """For the `score` goal: reach a Score of 10^N. Higher N = much longer run (it's an exponent)."""
+
+    display_name = "Score Goal: Exponent (10^N)"
+    range_start = 6
+    range_end = 9000
+    default = 100
+
+
+class PrestigeMultGoalExponent(Range):
+    """For the `prestige_mult` goal: reach a prestige multiplier of 10^N."""
+
+    display_name = "Prestige Mult Goal: Exponent (10^N)"
+    range_start = 1
+    range_end = 9000
+    default = 30
+
+
+class AchievementCountGoal(Range):
+    """For the `achievement_count` goal: how many achievements you must unlock in-game (1-520).
+
+    This counts your real in-game achievement unlocks (independent of how many are AP checks). The
+    win region is gated by the count: higher targets require the deeper prestige layers to reach.
+    """
+
+    display_name = "Achievement Count Goal"
+    range_start = 1
+    range_end = 520
+    default = 250
 
 
 # The game splits its 520 achievements into tiers (Const.ACH_RANGES), each tied to a prestige layer.
@@ -139,6 +176,9 @@ class RevolutionIdleOptions(PerGameCommonOptions):
     goal: Goal
     generators_goal_count: GeneratorsGoalCount
     generators_goal_level: GeneratorsGoalLevel
+    score_goal_exponent: ScoreGoalExponent
+    prestige_mult_goal_exponent: PrestigeMultGoalExponent
+    achievement_count_goal: AchievementCountGoal
     achievements_base: AchievementsBase
     achievements_infinity: AchievementsInfinity
     achievements_eternity: AchievementsEternity
@@ -151,7 +191,11 @@ class RevolutionIdleOptions(PerGameCommonOptions):
 
 
 option_groups = [
-    OptionGroup("General", [Goal, GeneratorsGoalCount, GeneratorsGoalLevel, ProgressiveLayers, TrapChance]),
+    OptionGroup("General", [Goal, ProgressiveLayers, TrapChance]),
+    OptionGroup("Goal Settings", [
+        GeneratorsGoalCount, GeneratorsGoalLevel,
+        ScoreGoalExponent, PrestigeMultGoalExponent, AchievementCountGoal,
+    ]),
     OptionGroup("Achievement Checks", [
         AchievementsBase, AchievementsInfinity, AchievementsEternity, AchievementsUnity,
         SecretAchievements,

@@ -17,7 +17,7 @@ public class Plugin : BasePlugin
 {
     public const string Guid = "com.jontrnka.revolutionidle.ap";
     public const string Name = "Revolution Idle Archipelago";
-    public const string Version = "0.8.0";
+    public const string Version = "0.9.0";
 
     internal static ManualLogSource Logger = null!;
     public static ArchipelagoClient? Client;
@@ -218,6 +218,8 @@ public class Plugin : BasePlugin
     //   0 unity    -> achByte[160]   1 equality -> scoreEquality > 0
     //   2 infinity -> achByte[29]    3 eternity -> achByte[69]
     //   4 generators -> >= GenGoalCount generators at level (amount) >= GenGoalLevel
+    //   5 score -> score >= 10^ScoreGoalExponent   6 prestige_mult -> pMult >= 10^PrestigeMultGoalExponent
+    //   7 achievement_count -> CountUnlockedAch >= AchievementCountGoal
     private static bool IsGoalReached(GameData data)
     {
         try
@@ -228,6 +230,9 @@ public class Plugin : BasePlugin
                 case 2: return AchByteSet(data, 29);
                 case 3: return AchByteSet(data, 69);
                 case 4: return GeneratorsGoalReached(data);
+                case 5: return data.score.Exponent >= Client.ScoreGoalExponent;
+                case 6: return data.pMult.Exponent >= Client.PrestigeMultGoalExponent;
+                case 7: return data.CountUnlockedAch >= Client.AchievementCountGoal;
                 default: return AchByteSet(data, 160);
             }
         }
