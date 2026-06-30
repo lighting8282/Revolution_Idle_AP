@@ -12,6 +12,14 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.12.0] - 2026-06-30
+
+### Added
+- **In-game message feed overlay** — a top-right feed shows live AP activity: checks you find, items
+  you receive, other players joining/leaving, hints, chat, goals, and countdowns. Messages are
+  color-coded (received = green, you-found = blue, hints = yellow, joins = light blue, goals = gold)
+  and fade out after ~12s. Toggle with **F2**; default on (config: `[Overlay] Show Feed`).
+
 ## [0.11.3] - 2026-06-30
 
 ### Fixed

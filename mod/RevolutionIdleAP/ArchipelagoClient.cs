@@ -9,6 +9,8 @@ using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
+using UnityEngine;
+using Color = UnityEngine.Color;  // disambiguate from Archipelago.MultiClient.Net.Models.Color
 
 namespace RevolutionIdleAP;
 
@@ -89,13 +91,14 @@ public class ArchipelagoClient
         _session = ArchipelagoSessionFactory.CreateSession(host, port);
 
         _session.Items.ItemReceived += OnItemReceived;
-        _session.MessageLog.OnMessageReceived += msg => Plugin.Logger.LogInfo("[AP] " + msg.ToString());
+        _session.MessageLog.OnMessageReceived += OnLogMessage;
         _session.Socket.ErrorReceived += (e, m) => Plugin.Logger.LogError($"[AP] socket error: {m} {e}");
         _session.Socket.SocketClosed += reason =>
         {
             Connected = false;
             Status = $"Disconnected: {reason}";
             Plugin.Logger.LogWarning($"[AP] disconnected: {reason}");
+            ApFeed.Add($"Disconnected: {reason}", new Color(1f, 0.5f, 0.5f));
         };
 
         LoginResult result = _session.TryConnectAndLogin(
@@ -134,6 +137,7 @@ public class ArchipelagoClient
             try { Seed = _session.RoomState?.Seed ?? ""; } catch { Seed = ""; }
             Status = $"Connected as {slot} (goal {Goal})";
             Plugin.Logger.LogInfo($"[AP] connected. goal={Goal} seed={Seed}");
+            ApFeed.Add($"Connected as {slot} (goal {Goal})", new Color(0.45f, 0.9f, 0.45f));
 
             // DeathLink: Revolution Idle has no death mechanic, so we enable the service only to honor
             // the slot option — received deaths are logged and ignored, and we never send any.
@@ -152,6 +156,39 @@ public class ArchipelagoClient
         {
             Status = "Login failed: " + string.Join("; ", failure.Errors);
             Plugin.Logger.LogError("[AP] login failed: " + string.Join(" | ", failure.Errors));
+            ApFeed.Add("Login failed: " + string.Join("; ", failure.Errors), new Color(1f, 0.5f, 0.5f));
+        }
+    }
+
+    // Route every server log message to the BepInEx log and the on-screen feed (color-coded by type).
+    private void OnLogMessage(LogMessage msg)
+    {
+        string text = msg.ToString();
+        Plugin.Logger.LogInfo("[AP] " + text);
+        ApFeed.Add(text, ColorFor(msg));
+    }
+
+    private static Color ColorFor(LogMessage msg)
+    {
+        switch (msg)
+        {
+            case HintItemSendLogMessage _:
+                return new Color(1f, 0.85f, 0.3f);                   // hints: yellow
+            case ItemSendLogMessage item:
+                if (item.IsReceiverTheActivePlayer) return new Color(0.45f, 0.9f, 0.45f); // we received: green
+                if (item.IsSenderTheActivePlayer) return new Color(0.5f, 0.8f, 1f);        // we found/sent: blue
+                return new Color(0.72f, 0.72f, 0.72f);              // others' traffic: gray
+            case JoinLogMessage _:
+            case LeaveLogMessage _:
+                return new Color(0.6f, 0.85f, 1f);                   // join/leave: light blue
+            case GoalLogMessage _:
+            case CollectLogMessage _:
+            case ReleaseLogMessage _:
+                return new Color(1f, 0.8f, 0.2f);                    // goal/collect/release: gold
+            case CountdownLogMessage _:
+                return new Color(1f, 0.6f, 0.2f);                    // countdown: orange
+            default:
+                return new Color(0.9f, 0.9f, 0.9f);                  // chat / server / misc: near-white
         }
     }
 

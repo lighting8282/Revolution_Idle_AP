@@ -15,6 +15,8 @@ public class RevApTicker : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.F1))
             Plugin.ShowMenu = !Plugin.ShowMenu;
+        if (Input.GetKeyDown(KeyCode.F2))
+            Plugin.ShowFeed = !Plugin.ShowFeed;
 
         // Drive freeze/lag traps off unscaled time so they run (and self-restore) even at timeScale 0.
         try { ItemEffects.UpdateTimeEffects(); }
@@ -27,8 +29,18 @@ public class RevApTicker : MonoBehaviour
         catch (Exception e) { Plugin.Logger.LogError("[AP] tick error: " + e.Message); }
     }
 
+    private GUIStyle _feedStyle;
+    private const float FeedSeconds = 12f;  // how long each message stays on screen
+    private const int FeedMaxLines = 10;
+
     public void OnGUI()
     {
+        if (Plugin.ShowFeed)
+        {
+            try { DrawFeed(); }
+            catch (Exception e) { Plugin.Logger.LogError("[AP] feed draw error: " + e.Message); }
+        }
+
         if (!Plugin.ShowMenu) return;
 
         const float x = 24f, top = 24f, w = 360f, pad = 10f, fh = 24f, lh = 18f, gap = 6f;
@@ -36,7 +48,7 @@ public class RevApTicker : MonoBehaviour
 
         float ix = x + pad, iw = w - pad * 2f, y = top + 30f;
 
-        GUI.Label(new Rect(ix, y, iw, lh), "Press F1 to toggle this menu"); y += lh + gap;
+        GUI.Label(new Rect(ix, y, iw, lh), "F1: this menu   F2: message feed"); y += lh + gap;
 
         // AP Mode toggle — flips offline/isolated-save mode and restarts the game.
         GUI.Label(new Rect(ix, y, iw, lh), Plugin.APMode
@@ -64,5 +76,50 @@ public class RevApTicker : MonoBehaviour
         y += fh + 12f;
 
         GUI.Label(new Rect(ix, y, iw, lh * 2f), "Status: " + (Plugin.Client?.Status ?? "-"));
+    }
+
+    // Top-right feed of recent AP messages (checks given/received, joins, hints, chat...). Each line
+    // fades out after FeedSeconds. Drawn independently of the F1 menu.
+    private void DrawFeed()
+    {
+        var all = ApFeed.Snapshot();
+        if (all.Count == 0) return;
+
+        _feedStyle ??= new GUIStyle(GUI.skin.label) { wordWrap = true, fontSize = 12, alignment = TextAnchor.UpperLeft };
+
+        var now = DateTime.UtcNow;
+        var visible = new System.Collections.Generic.List<ApFeed.Entry>();
+        for (int i = all.Count - 1; i >= 0 && visible.Count < FeedMaxLines; i--)
+        {
+            if ((now - all[i].Time).TotalSeconds <= FeedSeconds) visible.Add(all[i]);
+        }
+        if (visible.Count == 0) return;
+        visible.Reverse(); // oldest at top, newest at bottom
+
+        const float w = 460f, pad = 8f, margin = 12f;
+        float x = Screen.width - w - margin, y = margin;
+
+        var heights = new float[visible.Count];
+        float total = 0f;
+        for (int i = 0; i < visible.Count; i++)
+        {
+            heights[i] = _feedStyle.CalcHeight(new GUIContent(visible[i].Text), w - pad * 2f);
+            total += heights[i] + 2f;
+        }
+
+        GUI.color = new Color(0f, 0f, 0f, 0.55f);
+        GUI.Box(new Rect(x, y, w, total + pad * 2f), GUIContent.none);
+
+        float yy = y + pad;
+        for (int i = 0; i < visible.Count; i++)
+        {
+            double age = (now - visible[i].Time).TotalSeconds;
+            float alpha = age > FeedSeconds - 3.0 ? Mathf.Clamp01((float)(FeedSeconds - age) / 3f) : 1f;
+            var c = visible[i].Color; c.a = alpha;
+            GUI.color = c;
+            GUI.Label(new Rect(x + pad, yy, w - pad * 2f, heights[i]), visible[i].Text, _feedStyle);
+            yy += heights[i] + 2f;
+        }
+        GUI.color = Color.white;
     }
 }

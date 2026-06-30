@@ -17,7 +17,7 @@ public class Plugin : BasePlugin
 {
     public const string Guid = "com.jontrnka.revolutionidle.ap";
     public const string Name = "Revolution Idle Archipelago";
-    public const string Version = "0.11.3";
+    public const string Version = "0.12.0";
 
     internal static ManualLogSource Logger = null!;
     public static ArchipelagoClient? Client;
@@ -31,6 +31,9 @@ public class Plugin : BasePlugin
     // cloud save and can start fresh per seed.
     public static bool APMode = false;
     private static ConfigEntry<bool> _apModeEntry = null!;
+
+    // In-game message feed overlay (toggled with F2).
+    public static bool ShowFeed = true;
 
     // In-game connection menu state (toggled with F1). Seeded from the config file, and written back
     // on connect so the last-entered values are remembered next launch.
@@ -59,6 +62,8 @@ public class Plugin : BasePlugin
         MenuSlot = _cfgSlot.Value;
         MenuPass = _cfgPass.Value;
         var enabled = Config.Bind("Connection", "Enabled", true, "Auto-connect on startup using the values above").Value;
+        ShowFeed = Config.Bind("Overlay", "Show Feed", true,
+            "Show the in-game AP message feed (checks, joins, hints, chat). Toggle in-game with F2.").Value;
         _apModeEntry = Config.Bind("AP Mode", "Enabled", false,
             "Run offline with an isolated save so AP play never touches your normal cloud save (and can start fresh per seed). Turn OFF for normal play.");
         APMode = _apModeEntry.Value;
