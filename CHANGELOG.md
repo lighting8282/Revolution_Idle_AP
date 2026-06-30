@@ -20,6 +20,16 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
   color-coded (received = green, you-found = blue, hints = yellow, joins = light blue, goals = gold)
   and fade out after ~12s. Toggle with **F2**; default on (config: `[Overlay] Show Feed`).
 
+## [0.12.1] - 2026-06-30
+
+### Fixed
+- **AP Mode Nakama crash spam (correct fix)** — traced the startup `NullReferenceException` to
+  `NakamaManager.InternalAwake()`, the game's Awake that kicks off the Steam-auth/cloud-connect at
+  launch (which is why it appeared before connecting). 0.11.3's `HasInternet` gate didn't help because
+  Awake doesn't check it. AP Mode now skips `InternalAwake` outright (a plain void method that
+  patches reliably), so the cloud subsystem never starts and the error can't occur. Normal play
+  unaffected.
+
 ## [0.11.3] - 2026-06-30
 
 ### Fixed
