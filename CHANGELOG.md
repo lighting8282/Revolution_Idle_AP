@@ -12,6 +12,15 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.8.0] - 2026-06-29
+
+### Added
+- **New `generators` goal** — win by getting a number of base generators to a target upgrade level,
+  controlled by two new options: `generators_goal_count` (1-10, default 10) and
+  `generators_goal_level` (1-100, default 100). Default = "max out all 10 base generators". This is a
+  base-tier grind goal (reachable from the start; no layer unlocks required). The mod detects it from
+  the generator levels it already reads each tick.
+
 ## [0.7.0] - 2026-06-29
 
 ### Added

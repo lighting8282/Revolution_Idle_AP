@@ -11,6 +11,8 @@ class Goal(Choice):
     eternity: reach the Eternity layer (medium run).
     unity: reach the Unity layer (long run).
     equality: reach Unity, collect every unlock, and earn Equality currency (longest / completionist).
+    generators: get a number of base generators to a target upgrade level (see the two
+        generators_goal_* options). Base-tier grind goal; reachable from the start.
     """
 
     display_name = "Goal"
@@ -20,7 +22,26 @@ class Goal(Choice):
     option_equality = 1
     option_infinity = 2
     option_eternity = 3
+    option_generators = 4
     default = option_unity
+
+
+class GeneratorsGoalCount(Range):
+    """For the `generators` goal: how many base generators must reach the target level (1-10)."""
+
+    display_name = "Generators Goal: Count"
+    range_start = 1
+    range_end = 10
+    default = 10
+
+
+class GeneratorsGoalLevel(Range):
+    """For the `generators` goal: the upgrade level each of those generators must reach (1-100)."""
+
+    display_name = "Generators Goal: Level"
+    range_start = 1
+    range_end = 100
+    default = 100
 
 
 # The game splits its 520 achievements into tiers (Const.ACH_RANGES), each tied to a prestige layer.
@@ -116,6 +137,8 @@ class TrapChance(Range):
 @dataclass
 class RevolutionIdleOptions(PerGameCommonOptions):
     goal: Goal
+    generators_goal_count: GeneratorsGoalCount
+    generators_goal_level: GeneratorsGoalLevel
     achievements_base: AchievementsBase
     achievements_infinity: AchievementsInfinity
     achievements_eternity: AchievementsEternity
@@ -128,7 +151,7 @@ class RevolutionIdleOptions(PerGameCommonOptions):
 
 
 option_groups = [
-    OptionGroup("General", [Goal, ProgressiveLayers, TrapChance]),
+    OptionGroup("General", [Goal, GeneratorsGoalCount, GeneratorsGoalLevel, ProgressiveLayers, TrapChance]),
     OptionGroup("Achievement Checks", [
         AchievementsBase, AchievementsInfinity, AchievementsEternity, AchievementsUnity,
         SecretAchievements,

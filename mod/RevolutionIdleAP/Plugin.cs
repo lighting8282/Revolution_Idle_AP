@@ -17,7 +17,7 @@ public class Plugin : BasePlugin
 {
     public const string Guid = "com.jontrnka.revolutionidle.ap";
     public const string Name = "Revolution Idle Archipelago";
-    public const string Version = "0.7.0";
+    public const string Version = "0.8.0";
 
     internal static ManualLogSource Logger = null!;
     public static ArchipelagoClient? Client;
@@ -217,6 +217,7 @@ public class Plugin : BasePlugin
     // Goal signals (slot_data goal value):
     //   0 unity    -> achByte[160]   1 equality -> scoreEquality > 0
     //   2 infinity -> achByte[29]    3 eternity -> achByte[69]
+    //   4 generators -> >= GenGoalCount generators at level (amount) >= GenGoalLevel
     private static bool IsGoalReached(GameData data)
     {
         try
@@ -226,6 +227,7 @@ public class Plugin : BasePlugin
                 case 1: return data.scoreEquality.ToDouble() > 0.0;
                 case 2: return AchByteSet(data, 29);
                 case 3: return AchByteSet(data, 69);
+                case 4: return GeneratorsGoalReached(data);
                 default: return AchByteSet(data, 160);
             }
         }
@@ -234,6 +236,20 @@ public class Plugin : BasePlugin
             Logger.LogError("[AP] goal check error: " + e.Message);
             return false;
         }
+    }
+
+    private static bool GeneratorsGoalReached(GameData data)
+    {
+        var gens = data.infinity?.generators;
+        if (gens == null) return false;
+        int need = Client!.GenGoalCount, level = Client.GenGoalLevel, have = 0;
+        int n = gens.Count;
+        for (int i = 0; i < n; i++)
+        {
+            var g = gens[i];
+            if (g != null && g.amount >= level && ++have >= need) return true;
+        }
+        return false;
     }
 
     private static bool AchByteSet(GameData data, int index)

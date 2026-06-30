@@ -35,6 +35,10 @@ public class ArchipelagoClient
     // From slot_data: a generator-level check every N levels (0 = generator-level checks disabled).
     public int GenLevelInterval { get; private set; } = 0;
 
+    // From slot_data: "generators" goal parameters (have GenGoalCount generators at level >= GenGoalLevel).
+    public int GenGoalCount { get; private set; } = 10;
+    public int GenGoalLevel { get; private set; } = 100;
+
     // Identity of the connected multiworld, used to detect a save being reused across seeds.
     public string Slot { get; private set; } = "";
     public string Seed { get; private set; } = "";
@@ -90,6 +94,10 @@ public class ArchipelagoClient
                 Goal = Convert.ToInt32(g);
             if (success.SlotData != null && success.SlotData.TryGetValue("generator_level_interval", out var gli) && gli != null)
                 GenLevelInterval = Convert.ToInt32(gli);
+            if (success.SlotData != null && success.SlotData.TryGetValue("generators_goal_count", out var ggc) && ggc != null)
+                GenGoalCount = Convert.ToInt32(ggc);
+            if (success.SlotData != null && success.SlotData.TryGetValue("generators_goal_level", out var ggl) && ggl != null)
+                GenGoalLevel = Convert.ToInt32(ggl);
             try { Seed = _session.RoomState?.Seed ?? ""; } catch { Seed = ""; }
             Status = $"Connected as {slot} (goal {Goal})";
             Plugin.Logger.LogInfo($"[AP] connected. goal={Goal} seed={Seed}");
