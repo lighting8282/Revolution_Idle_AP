@@ -92,6 +92,7 @@ public class ArchipelagoClient
 
         _session.Items.ItemReceived += OnItemReceived;
         _session.MessageLog.OnMessageReceived += OnLogMessage;
+        _session.Locations.CheckedLocationsUpdated += locs => QueueAchMarks(locs);
         _session.Socket.ErrorReceived += (e, m) => Plugin.Logger.LogError($"[AP] socket error: {m} {e}");
         _session.Socket.SocketClosed += reason =>
         {
@@ -138,6 +139,9 @@ public class ArchipelagoClient
             Status = $"Connected as {slot} (goal {Goal})";
             Plugin.Logger.LogInfo($"[AP] connected. goal={Goal} seed={Seed}");
             ApFeed.Add($"Connected as {slot} (goal {Goal})", new Color(0.45f, 0.9f, 0.45f));
+
+            // Reflect already-checked achievement locations in the in-game achievement panel.
+            try { QueueAchMarks(_session.Locations.AllLocationsChecked); } catch { }
 
             // DeathLink: Revolution Idle has no death mechanic, so we enable the service only to honor
             // the slot option — received deaths are logged and ignored, and we never send any.
@@ -221,6 +225,19 @@ public class ArchipelagoClient
     private static bool IsAchId(int id) =>
         (id >= 0 && id < AchCount) ||
         (id >= SecretGameIdBase && id < SecretGameIdBase + SecretCount);
+
+    // Map checked achievement LOCATIONS back to game achievement ids and queue them to be marked
+    // complete in-game (location id = AchIdBase + game id, for both normal and secret achievements).
+    private void QueueAchMarks(IEnumerable<long> locationIds)
+    {
+        if (locationIds == null) return;
+        foreach (long loc in locationIds)
+        {
+            long g = loc - AchIdBase;
+            if ((g >= 0 && g < AchCount) || (g >= SecretGameIdBase && g < SecretGameIdBase + SecretCount))
+                AchievementSync.QueueMark((int)g);
+        }
+    }
 
     // Send one achievement (game id) as an AP location check.
     public void SendAchievement(int gameAchId)

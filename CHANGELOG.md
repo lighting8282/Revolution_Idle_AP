@@ -20,6 +20,15 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
   color-coded (received = green, you-found = blue, hints = yellow, joins = light blue, goals = gold)
   and fade out after ~12s. Toggle with **F2**; default on (config: `[Overlay] Show Feed`).
 
+## [0.13.0] - 2026-06-30
+
+### Added
+- **In-game achievement panel reflects AP checks** — on connect (and live), achievements whose AP
+  location is already checked on the server are marked completed in the game's own achievement list.
+  This keeps the panel in sync when resuming a seed or when checks are completed remotely
+  (`!collect` / co-op release). It's **visual only** — it sets the unlock flag without granting the
+  achievement's in-game reward/bonus. (You may need to reopen the panel to see updates.)
+
 ## [0.12.3] - 2026-06-30
 
 ### Reverted

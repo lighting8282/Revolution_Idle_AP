@@ -17,7 +17,7 @@ public class Plugin : BasePlugin
 {
     public const string Guid = "com.jontrnka.revolutionidle.ap";
     public const string Name = "Revolution Idle Archipelago";
-    public const string Version = "0.12.3";
+    public const string Version = "0.13.0";
 
     internal static ManualLogSource Logger = null!;
     public static ArchipelagoClient? Client;
@@ -237,6 +237,9 @@ public class Plugin : BasePlugin
             }
         }
         catch (System.Exception e) { Logger.LogError("[AP] generator check error: " + e.Message); }
+
+        // Reflect AP-checked achievements in the in-game panel (visual only, no rewards).
+        AchievementSync.ApplyPending(data);
 
         // Apply any queued filler/trap effects (score boost / slowdown).
         ItemEffects.ApplyPending(data);
