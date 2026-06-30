@@ -18,10 +18,25 @@ public static class CloudPatches
     }
 }
 
-// AP Mode: also stop the whole Nakama Steam-auth / session chain from running. Faking IsSessionOn
-// isn't enough — the game still authenticates and then crashes in Initialize() (NullReferenceException)
-// because we've forced it offline. Skipping these returns a completed task so startup proceeds cleanly
-// with no cloud and no error spam. Normal play is untouched (prefix runs the original).
+// AP Mode: report no internet so the game never starts the Steam-auth / Nakama connect chain at all.
+// This is a plain bool getter (reliably patchable, unlike the async connect methods), and stopping the
+// chain at the source prevents the NullReferenceException the game throws when it auths while we've
+// forced it offline. Normal play is untouched.
+[HarmonyPatch(typeof(NakamaManager), "get_HasInternet")]
+public static class NakamaHasInternetPatch
+{
+    [HarmonyPrefix]
+    public static bool Prefix(ref bool __result)
+    {
+        if (!Plugin.APMode) return true;
+        __result = false;
+        return false;
+    }
+}
+
+// AP Mode: belt-and-suspenders attempt to also short-circuit the async connect chain. (Harmony can't
+// always intercept IL2CPP async method bodies, so this may be a no-op; the HasInternet gate above is
+// the primary fix.) Normal play is untouched.
 [HarmonyPatch(typeof(NakamaManager), "SteamAuth")]
 public static class NakamaSteamAuthPatch
 {

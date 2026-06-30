@@ -12,13 +12,18 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.11.3] - 2026-06-30
+
+### Fixed
+- **AP Mode startup crash spam (real fix)** — v0.11.2's attempt to skip the async Steam-auth methods
+  didn't take (Harmony can't reliably intercept IL2CPP async method bodies). AP Mode now forces
+  `NakamaManager.HasInternet` to false (a plain bool getter, reliably patchable), so the game never
+  starts the cloud connect chain and the `NullReferenceException` never occurs. Normal play unaffected.
+
 ## [0.11.2] - 2026-06-30
 
 ### Fixed
-- **AP Mode startup crash spam** — the game's Nakama cloud manager threw a `NullReferenceException`
-  (red `[SERVER][ERROR]` text) on launch in AP Mode, because it still ran the full Steam-auth/session
-  chain while we forced it offline. AP Mode now also short-circuits `NakamaManager.SteamAuth` and
-  `Initialize`, so the cloud chain never runs offline. Normal play is unaffected.
+- AP Mode startup crash spam — first (ineffective) attempt; see 0.11.3.
 
 ## [0.11.1] - 2026-06-30
 
