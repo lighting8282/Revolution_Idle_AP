@@ -2,8 +2,8 @@
 
 Play [Revolution Idle](https://store.steampowered.com/app/2763740/) as an
 [Archipelago](https://archipelago.gg) multiworld. Your prestige layers and side systems start
-**locked** and are unlocked by items from the multiworld; completing the game's **520 achievements**
-sends checks out to other players.
+**locked** and are unlocked by items from the multiworld; completing the game's **achievements** and
+**owning/leveling generators** sends checks out to other players.
 
 This repo has two parts:
 
@@ -24,21 +24,44 @@ builds mod support, ~2–4 min), then press **F1** in-game to open the connectio
 
 ## Features
 
-- 520 achievement location checks; 35 items (layer unlocks, side-system unlocks, automation, filler, traps).
-- **Tiered logic** mirroring the game's own progression: base → Infinity → Eternity → Unity, each
-  gated by its unlock item (derived from the game's `Const.ACH_RANGES`).
-- Goals: `infinity`, `eternity`, `unity`, or `equality` (completionist) — all auto-detected in-game.
-- Adjustable run length via `achievement_pool` (use 50–520 of the achievements as checks).
-- Optional `progressive_layers` (one item unlocks the next layer in order).
-- Real filler/trap effects: `Score Boost` grants ~60s of income; `Slowdown Trap` removes ~120s.
-- Full in-game integration: receiving an item unlocks the matching system (30 unlocks across 9 game
-  classes); completing an achievement sends its check; goals are auto-detected.
-- In-game **F1 connection menu** (hostname/port/slot/password + status) — no config editing needed.
+**Location checks**
+- Up to **520 achievement** checks, split into the game's own tiers — pick how many of each become
+  checks with `achievements_base` / `achievements_infinity` / `achievements_eternity` /
+  `achievements_unity` (defaults = the full 520).
+- Optional **55 secret achievements** (`secret_achievements`).
+- **10 generator** checks (own each base generator), plus optional **per-level** checks every N
+  levels on each generator (`generator_level_interval`).
+
+**Items**
+- Prestige-tower unlocks (Infinity / Eternity / Unity — or three `progressive_layers` items),
+  ~20 side-system unlocks, and automation unlocks.
+- **4 fillers**: Score Boost, Generator Boost, Income Jackpot, Overdrive.
+- **4 traps**: Slowdown, Freeze, Lag, Generator Drain — picked at random; every effect's magnitude
+  is tunable from the YAML.
+
+**Goals** (all auto-detected in-game):
+- `unity`, `eternity`, `infinity` — reach that layer.
+- `equality` — reach Unity, collect every unlock, earn Equality currency (completionist).
+- `generators` — get N base generators to a target level.
+- `score` / `prestige_mult` — reach 10^N Score / prestige multiplier.
+- `achievement_count` — unlock N achievements in-game.
+
+**In-game integration**
+- **Tiered logic** mirroring the game's progression (base → Infinity → Eternity → Unity), gated by
+  each layer's unlock item (derived from the game's `Const.ACH_RANGES`).
+- Receiving an item force-unlocks the matching system (30 unlocks across 9 game classes); completing
+  an achievement or owning/leveling a generator sends its check.
+- **F1 connection menu** (host / port / slot / password + live status) — remembers your last-used
+  values; no config editing needed.
+- **F2 message feed overlay** — a bottom-left feed of live AP activity (checks, items, joins, hints,
+  chat, goals), color-coded.
+- The in-game **achievement panel reflects AP-checked achievements** (visual only — no rewards),
+  staying in sync when you resume a seed or checks are collected remotely.
 - **AP Mode** — plays offline with an **isolated save** so AP never touches your normal (cloud) save,
   and **auto-starts fresh per seed** (resumes the same seed). It's effectively a separate "AP version"
   of the game. Toggle it from the **F1 menu** (auto-restarts) or launch the bundled
   `Play Revolution Idle (AP).bat`.
-- Options: goal, trap chance, death link (no-op — the game has no death mechanic).
+- `death_link` option is accepted but is a no-op (the game has no death mechanic).
 
 ### YAML
 
@@ -56,11 +79,20 @@ game: Revolution Idle
 requires:
   version: 0.6.7
 Revolution Idle:
-  goal: unity              # infinity | eternity | unity | equality
-  achievement_pool: 520    # 50-520; fewer = shorter run
+  goal: unity                 # unity|equality|infinity|eternity|generators|score|prestige_mult|achievement_count
+  # how many achievements per tier become checks (defaults shown = all 520)
+  achievements_base: 30       # 0-30
+  achievements_infinity: 40   # 0-40
+  achievements_eternity: 91   # 0-91
+  achievements_unity: 359     # 0-359
+  secret_achievements: false  # add the 55 secret achievements
+  generator_level_interval: 0 # 0 = off; else a check every N levels on each of the 10 generators
   progressive_layers: false
-  trap_chance: 10
+  trap_chance: 10             # 0-100; when a trap rolls, its type is random
   death_link: false
+  # Goal-specific thresholds (generators_goal_*, score_goal_exponent, ...) and trap/filler
+  # magnitudes (freeze_trap_seconds, overdrive_seconds, ...) all have sensible defaults —
+  # see the full template for the complete list.
 ```
 
 ## Repository layout
@@ -95,13 +127,15 @@ BepInEx builds don't support this game's Unity version out of the box, see
 
 ## Status
 
-Playable end-to-end: generates solvable seeds, connects, applies all unlocks, and sends all
-achievement checks. Known limitations (see [`CHANGELOG.md`](CHANGELOG.md)):
+Playable end-to-end: generates solvable seeds, connects, applies all unlocks, and sends achievement
+and generator checks. Known limitations (see [`CHANGELOG.md`](CHANGELOG.md)):
 
 - Death Link is accepted but does nothing (no death mechanic).
 - The `equality` goal trigger is implemented but not yet confirmed by a full deep playthrough.
 - Logic gates by prestige tier, not per individual side system.
-- Secret achievements aren't used as checks.
+- In **AP Mode**, the game logs a harmless cloud-sync error on launch (its offline Nakama/Steam auth
+  fails and the game catches it — AP play is unaffected). It can't be suppressed from the mod because
+  it runs in the game's async startup before/outside anything the mod can intercept.
 
 ## Credits & license
 
