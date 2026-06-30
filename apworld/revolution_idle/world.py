@@ -32,7 +32,7 @@ class RevolutionIdleWorld(World):
         ri_options.Goal.option_eternity: "Eternity",
         ri_options.Goal.option_unity: "Unity",
         ri_options.Goal.option_equality: "Unity",
-        ri_options.Goal.option_generators: "Menu",  # maxing base generators is base-tier
+        ri_options.Goal.option_ascension: "Menu",    # ascension grind is base-tier
         ri_options.Goal.option_score: "Menu",        # score grind is base-tier
         ri_options.Goal.option_prestige_mult: "Menu",
     }
@@ -74,8 +74,8 @@ class RevolutionIdleWorld(World):
 
     def fill_slot_data(self) -> Mapping[str, Any]:
         return self.options.as_dict(
-            "goal", "death_link", "generator_level_interval",
-            "generators_goal_count", "generators_goal_level",
+            "goal", "death_link",
+            "ascension_goal", "ascension_check_count", "ascension_check_interval",
             "score_goal_exponent", "prestige_mult_goal_exponent", "achievement_count_goal",
             "freeze_trap_seconds", "lag_trap_seconds", "generator_drain_levels",
             "generator_boost_levels", "overdrive_seconds", "income_jackpot_seconds",

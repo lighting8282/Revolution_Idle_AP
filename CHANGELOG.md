@@ -20,6 +20,22 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
   color-coded (received = green, you-found = blue, hints = yellow, joins = light blue, goals = gold)
   and fade out after ~12s. Toggle with **F2**; default on (config: `[Overlay] Show Feed`).
 
+## [0.14.0] - 2026-06-30
+
+### Added
+- **Ascension-milestone checks** — a check for every `ascension_check_interval` total ascension
+  levels (summed across all 10 revolutions), up to `ascension_check_count` of them. By default these
+  hold **filler only**; `ascension_checks_progression` lets them hold progression. Off by default
+  (`ascension_check_count: 0`).
+- **`ascension` goal** — reach a target total ascension level (`ascension_goal`). Base-tier.
+
+### Changed / Removed (breaking)
+- Replaced the **generator-level checks** (`generator_level_interval`) with the ascension-milestone
+  checks above.
+- Replaced the **`generators` goal** (and `generators_goal_count` / `generators_goal_level`) with the
+  new `ascension` goal. Existing YAMLs using those options/goal should switch over.
+- Generator **ownership** checks (own each of the 10 base generators) are unchanged.
+
 ## [0.13.0] - 2026-06-30
 
 ### Added

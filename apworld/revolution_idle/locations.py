@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from BaseClasses import Location
+from BaseClasses import Location, LocationProgressType
 
 from . import items
 from .items import RevolutionIdleItem
@@ -23,23 +23,24 @@ SECRET_GAME_ID_BASE = 10_000
 GEN_COUNT = 10
 GEN_ID_BASE = 30_000
 
-# Per-generator level checks. Each generator levels from 1 to 100 as you buy it; the
-# generator_level_interval option turns levels N, 2N, ... into checks.
-GEN_MAX_LEVEL = 100
-GEN_LEVEL_ID_BASE = 40_000
+# Ascension-milestone checks. Total ascension = sum of GameData.revolutions[i].ascension. A check is
+# awarded for every `ascension_check_interval` total levels, up to `ascension_check_count` of them.
+# Locations are named/ID'd by index (milestone k = at level k * interval) so the id map is stable
+# regardless of the chosen interval.
+ASC_ID_BASE = 50_000
+ASC_MAX_MILESTONES = 200
 
 
 def gen_location_name(index: int) -> str:
     return f"Generator {index + 1}"
 
 
-def gen_level_location_name(index: int, level: int) -> str:
-    return f"Generator {index + 1} Level {level}"
+def asc_milestone_location_name(k: int) -> str:
+    return f"Ascension Milestone {k}"
 
 
-def gen_level_location_id(index: int, level: int) -> int:
-    # 40000 + gen*100 + level  -> stable, collision-free (gen 0 lvl 1 = 40001 .. gen 9 lvl 100 = 41000)
-    return GEN_LEVEL_ID_BASE + index * GEN_MAX_LEVEL + level
+def asc_milestone_location_id(k: int) -> int:
+    return ASC_ID_BASE + k  # k = 1..ASC_MAX_MILESTONES -> 50001..50200
 
 # Achievement-id tiers from Const.ACH_RANGES, mapped to the tower regions they require and the
 # per-tier count option that controls how many of them become checks.
@@ -79,20 +80,12 @@ LOCATION_NAME_TO_ID.update({
 LOCATION_NAME_TO_ID.update({
     gen_location_name(i): GEN_ID_BASE + i for i in range(GEN_COUNT)
 })
-# Every possible generator-level location (1..100 per generator); only the ones matching the
-# chosen interval are actually created per seed, but the full id map must be stable.
+# Every possible ascension-milestone location (by index); only `ascension_check_count` are created
+# per seed, but the full id map must be stable.
 LOCATION_NAME_TO_ID.update({
-    gen_level_location_name(i, lvl): gen_level_location_id(i, lvl)
-    for i in range(GEN_COUNT)
-    for lvl in range(1, GEN_MAX_LEVEL + 1)
+    asc_milestone_location_name(k): asc_milestone_location_id(k)
+    for k in range(1, ASC_MAX_MILESTONES + 1)
 })
-
-
-def generator_level_milestones(interval: int) -> list[int]:
-    """Levels that become checks for a given interval (e.g. 25 -> [25, 50, 75, 100]). 0 = none."""
-    if interval <= 0:
-        return []
-    return list(range(interval, GEN_MAX_LEVEL + 1, interval))
 
 
 class RevolutionIdleLocation(Location):
@@ -132,15 +125,17 @@ def create_all_locations(world: RevolutionIdleWorld) -> None:
     gen_names = {gen_location_name(i): GEN_ID_BASE + i for i in range(GEN_COUNT)}
     world.get_region("Menu").add_locations(gen_names, RevolutionIdleLocation)
 
-    # Generator-level checks: every N levels on each generator (base-tier grind -> Menu region).
-    milestones = generator_level_milestones(world.options.generator_level_interval.value)
-    if milestones:
-        gen_level_names = {
-            gen_level_location_name(i, lvl): gen_level_location_id(i, lvl)
-            for i in range(GEN_COUNT)
-            for lvl in milestones
-        }
-        world.get_region("Menu").add_locations(gen_level_names, RevolutionIdleLocation)
+    # Ascension-milestone checks: every `interval` total ascension levels (base-tier grind -> Menu).
+    count = min(world.options.ascension_check_count.value, ASC_MAX_MILESTONES)
+    if count > 0:
+        asc_names = {asc_milestone_location_name(k): asc_milestone_location_id(k) for k in range(1, count + 1)}
+        menu = world.get_region("Menu")
+        menu.add_locations(asc_names, RevolutionIdleLocation)
+        # By default these only hold filler; the toggle lets them hold progression.
+        if not world.options.ascension_checks_progression:
+            for loc in menu.get_locations():
+                if loc.name in asc_names:
+                    loc.progress_type = LocationProgressType.EXCLUDED
 
     create_victory_event(world)
 

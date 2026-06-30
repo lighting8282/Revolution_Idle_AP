@@ -11,8 +11,8 @@ class Goal(Choice):
     eternity: reach the Eternity layer (medium run).
     unity: reach the Unity layer (long run).
     equality: reach Unity, collect every unlock, and earn Equality currency (longest / completionist).
-    generators: get a number of base generators to a target upgrade level (see the two
-        generators_goal_* options). Base-tier grind goal; reachable from the start.
+    ascension: reach a target total ascension level across all revolutions (see ascension_goal).
+        Base-tier grind goal; reachable from the start.
     score: reach a target Score of 10^N (see score_goal_exponent). Base-tier.
     prestige_mult: reach a target prestige multiplier of 10^N (see prestige_mult_goal_exponent).
     achievement_count: unlock a target number of achievements in-game (see achievement_count_goal).
@@ -25,29 +25,20 @@ class Goal(Choice):
     option_equality = 1
     option_infinity = 2
     option_eternity = 3
-    option_generators = 4
+    option_ascension = 4
     option_score = 5
     option_prestige_mult = 6
     option_achievement_count = 7
     default = option_unity
 
 
-class GeneratorsGoalCount(Range):
-    """For the `generators` goal: how many base generators must reach the target level (1-10)."""
+class AscensionGoal(Range):
+    """For the `ascension` goal: the total ascension level (summed across all revolutions) to reach."""
 
-    display_name = "Generators Goal: Count"
+    display_name = "Ascension Goal: Total Levels"
     range_start = 1
-    range_end = 10
-    default = 10
-
-
-class GeneratorsGoalLevel(Range):
-    """For the `generators` goal: the upgrade level each of those generators must reach (1-100)."""
-
-    display_name = "Generators Goal: Level"
-    range_start = 1
-    range_end = 100
-    default = 100
+    range_end = 2_000_000
+    default = 5000
 
 
 class ScoreGoalExponent(Range):
@@ -134,20 +125,38 @@ class SecretAchievements(Toggle):
     display_name = "Secret Achievements"
 
 
-class GeneratorLevelInterval(Range):
+class AscensionCheckCount(Range):
     """
-    Add a location check every N levels on each of the 10 base generators (each generator levels
-    up as you buy it, from 1 to 100).
+    How many ascension-milestone checks to add (0 disables them).
 
-    0 disables generator-level checks. Otherwise you get a check at level N, 2N, 3N ... up to 100
-    on every generator. Example: 25 -> checks at levels 25/50/75/100 (4 per generator, 40 total);
-    10 -> 10 per generator (100 total). Smaller values = far more checks.
+    With count N and interval I, you get checks at total ascension I, 2I, ... N*I (total ascension is
+    summed across all 10 revolutions). By default these only hold filler items; see
+    ascension_checks_progression.
     """
 
-    display_name = "Generator Level Interval"
+    display_name = "Ascension Check Count"
     range_start = 0
-    range_end = 100
+    range_end = 200
     default = 0
+
+
+class AscensionCheckInterval(Range):
+    """Spacing of ascension-milestone checks: one check per this many total ascension levels."""
+
+    display_name = "Ascension Check Interval"
+    range_start = 1
+    range_end = 100_000
+    default = 500
+
+
+class AscensionChecksProgression(Toggle):
+    """
+    Allow ascension-milestone checks to hold progression/important items.
+
+    Off (default): they only ever hold filler. On: they're treated like normal locations.
+    """
+
+    display_name = "Ascension Checks Can Hold Progression"
 
 
 class ProgressiveLayers(Toggle):
@@ -229,8 +238,7 @@ class IncomeJackpotSeconds(Range):
 @dataclass
 class RevolutionIdleOptions(PerGameCommonOptions):
     goal: Goal
-    generators_goal_count: GeneratorsGoalCount
-    generators_goal_level: GeneratorsGoalLevel
+    ascension_goal: AscensionGoal
     score_goal_exponent: ScoreGoalExponent
     prestige_mult_goal_exponent: PrestigeMultGoalExponent
     achievement_count_goal: AchievementCountGoal
@@ -239,7 +247,9 @@ class RevolutionIdleOptions(PerGameCommonOptions):
     achievements_eternity: AchievementsEternity
     achievements_unity: AchievementsUnity
     secret_achievements: SecretAchievements
-    generator_level_interval: GeneratorLevelInterval
+    ascension_check_count: AscensionCheckCount
+    ascension_check_interval: AscensionCheckInterval
+    ascension_checks_progression: AscensionChecksProgression
     progressive_layers: ProgressiveLayers
     trap_chance: TrapChance
     freeze_trap_seconds: FreezeTrapSeconds
@@ -256,12 +266,13 @@ option_groups = [
     OptionGroup("Traps", [TrapChance, FreezeTrapSeconds, LagTrapSeconds, GeneratorDrainLevels]),
     OptionGroup("Fillers", [GeneratorBoostLevels, OverdriveSeconds, IncomeJackpotSeconds]),
     OptionGroup("Goal Settings", [
-        GeneratorsGoalCount, GeneratorsGoalLevel,
-        ScoreGoalExponent, PrestigeMultGoalExponent, AchievementCountGoal,
+        AscensionGoal, ScoreGoalExponent, PrestigeMultGoalExponent, AchievementCountGoal,
     ]),
     OptionGroup("Achievement Checks", [
         AchievementsBase, AchievementsInfinity, AchievementsEternity, AchievementsUnity,
         SecretAchievements,
     ]),
-    OptionGroup("Generator Checks", [GeneratorLevelInterval]),
+    OptionGroup("Ascension Checks", [
+        AscensionCheckCount, AscensionCheckInterval, AscensionChecksProgression,
+    ]),
 ]

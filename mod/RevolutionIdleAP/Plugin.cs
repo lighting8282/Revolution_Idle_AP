@@ -17,7 +17,7 @@ public class Plugin : BasePlugin
 {
     public const string Guid = "com.jontrnka.revolutionidle.ap";
     public const string Name = "Revolution Idle Archipelago";
-    public const string Version = "0.13.0";
+    public const string Version = "0.14.0";
 
     internal static ManualLogSource Logger = null!;
     public static ArchipelagoClient? Client;
@@ -25,7 +25,7 @@ public class Plugin : BasePlugin
     private static bool _seedChecked;
     private static bool _freshChecked;
     private static readonly HashSet<int> _genSent = new();
-    private static readonly HashSet<long> _genLevelSent = new(); // key = genIndex * 1000 + level
+    private static readonly HashSet<int> _ascSent = new(); // ascension milestone indices already sent
 
     // AP Mode: run offline (cloud blocked) + isolated save so AP play never touches your normal
     // cloud save and can start fresh per seed.
@@ -204,39 +204,41 @@ public class Plugin : BasePlugin
             if (gens != null)
             {
                 int n = gens.Count;
-                int interval = Client.GenLevelInterval;
                 for (int i = 0; i < n && i < ArchipelagoClient.GenCount; i++)
                 {
                     var g = gens[i];
-                    if (g == null) continue;
-
-                    // Own check: first time this generator has any amount.
-                    if (!_genSent.Contains(i) && g.amount >= 1.0)
+                    if (g != null && !_genSent.Contains(i) && g.amount >= 1.0)
                     {
                         _genSent.Add(i);
                         Client.SendGenerator(i);
                         Logger.LogInfo($"[AP] generator {i + 1} owned -> check");
                     }
-
-                    // Level checks: a check at every `interval` levels (amount is the level, 1..100).
-                    if (interval > 0)
-                    {
-                        int lvl = (int)System.Math.Floor(g.amount);
-                        if (lvl > ArchipelagoClient.GenMaxLevel) lvl = ArchipelagoClient.GenMaxLevel;
-                        for (int m = interval; m <= lvl; m += interval)
-                        {
-                            long key = (long)i * 1000 + m;
-                            if (_genLevelSent.Add(key))
-                            {
-                                Client.SendGeneratorLevel(i, m);
-                                Logger.LogInfo($"[AP] generator {i + 1} reached level {m} -> check");
-                            }
-                        }
-                    }
                 }
             }
         }
         catch (System.Exception e) { Logger.LogError("[AP] generator check error: " + e.Message); }
+
+        // Ascension-milestone checks: one per `interval` total ascension levels (across revolutions).
+        try
+        {
+            int count = Client.AscCheckCount, interval = Client.AscCheckInterval;
+            if (count > 0 && interval > 0)
+            {
+                long total = AscensionTotal(data);
+                int max = count < ArchipelagoClient.AscMaxMilestones ? count : ArchipelagoClient.AscMaxMilestones;
+                for (int k = 1; k <= max; k++)
+                {
+                    if (_ascSent.Contains(k)) continue;
+                    if (total >= (long)k * interval)
+                    {
+                        _ascSent.Add(k);
+                        Client.SendAscensionMilestone(k);
+                        Logger.LogInfo($"[AP] ascension milestone {k} ({(long)k * interval} levels) -> check");
+                    }
+                }
+            }
+        }
+        catch (System.Exception e) { Logger.LogError("[AP] ascension check error: " + e.Message); }
 
         // Reflect AP-checked achievements in the in-game panel (visual only, no rewards).
         AchievementSync.ApplyPending(data);
@@ -252,7 +254,7 @@ public class Plugin : BasePlugin
     // Goal signals (slot_data goal value):
     //   0 unity    -> achByte[160]   1 equality -> scoreEquality > 0
     //   2 infinity -> achByte[29]    3 eternity -> achByte[69]
-    //   4 generators -> >= GenGoalCount generators at level (amount) >= GenGoalLevel
+    //   4 ascension -> total ascension (sum of revolutions[i].ascension) >= AscensionGoal
     //   5 score -> score >= 10^ScoreGoalExponent   6 prestige_mult -> pMult >= 10^PrestigeMultGoalExponent
     //   7 achievement_count -> CountUnlockedAch >= AchievementCountGoal
     private static bool IsGoalReached(GameData data)
@@ -264,7 +266,7 @@ public class Plugin : BasePlugin
                 case 1: return data.scoreEquality.ToDouble() > 0.0;
                 case 2: return AchByteSet(data, 29);
                 case 3: return AchByteSet(data, 69);
-                case 4: return GeneratorsGoalReached(data);
+                case 4: return AscensionTotal(data) >= Client.AscensionGoal;
                 case 5: return data.score.Exponent >= Client.ScoreGoalExponent;
                 case 6: return data.pMult.Exponent >= Client.PrestigeMultGoalExponent;
                 case 7: return data.CountUnlockedAch >= Client.AchievementCountGoal;
@@ -278,18 +280,19 @@ public class Plugin : BasePlugin
         }
     }
 
-    private static bool GeneratorsGoalReached(GameData data)
+    // Total ascension level summed across all revolutions (each Revolution has a long `ascension`).
+    private static long AscensionTotal(GameData data)
     {
-        var gens = data.infinity?.generators;
-        if (gens == null) return false;
-        int need = Client!.GenGoalCount, level = Client.GenGoalLevel, have = 0;
-        int n = gens.Count;
+        var revs = data.revolutions;
+        if (revs == null) return 0;
+        long total = 0;
+        int n = revs.Count;
         for (int i = 0; i < n; i++)
         {
-            var g = gens[i];
-            if (g != null && g.amount >= level && ++have >= need) return true;
+            var r = revs[i];
+            if (r != null) total += r.ascension;
         }
-        return false;
+        return total;
     }
 
     private static bool AchByteSet(GameData data, int index)
