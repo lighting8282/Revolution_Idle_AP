@@ -49,6 +49,11 @@ public class ArchipelagoClient
     public int LagTrapSeconds { get; private set; } = 60;
     public int GeneratorDrainLevels { get; private set; } = 20;
 
+    // From slot_data: filler effect tuning.
+    public int GeneratorBoostLevels { get; private set; } = 20;
+    public int OverdriveSeconds { get; private set; } = 60;
+    public int IncomeJackpotSeconds { get; private set; } = 600;
+
     // Identity of the connected multiworld, used to detect a save being reused across seeds.
     public string Slot { get; private set; } = "";
     public string Seed { get; private set; } = "";
@@ -120,6 +125,12 @@ public class ArchipelagoClient
                 LagTrapSeconds = Convert.ToInt32(lts);
             if (success.SlotData != null && success.SlotData.TryGetValue("generator_drain_levels", out var gdl) && gdl != null)
                 GeneratorDrainLevels = Convert.ToInt32(gdl);
+            if (success.SlotData != null && success.SlotData.TryGetValue("generator_boost_levels", out var gbl) && gbl != null)
+                GeneratorBoostLevels = Convert.ToInt32(gbl);
+            if (success.SlotData != null && success.SlotData.TryGetValue("overdrive_seconds", out var ods) && ods != null)
+                OverdriveSeconds = Convert.ToInt32(ods);
+            if (success.SlotData != null && success.SlotData.TryGetValue("income_jackpot_seconds", out var ijs) && ijs != null)
+                IncomeJackpotSeconds = Convert.ToInt32(ijs);
             try { Seed = _session.RoomState?.Seed ?? ""; } catch { Seed = ""; }
             Status = $"Connected as {slot} (goal {Goal})";
             Plugin.Logger.LogInfo($"[AP] connected. goal={Goal} seed={Seed}");
@@ -154,9 +165,12 @@ public class ArchipelagoClient
             {
                 case "Progressive Layer": UnlockState.AddProgressiveLayer(); break;
                 case "Score Boost": ItemEffects.QueueScoreBoost(); break;
+                case "Income Jackpot": ItemEffects.QueueIncomeJackpot(); break;
+                case "Generator Boost": ItemEffects.QueueGeneratorBoost(); break;
+                case "Overdrive": ItemEffects.QueueTimeScale(OverdriveSeconds, 2f); break;
                 case "Slowdown Trap": ItemEffects.QueueTrap(); break;
-                case "Freeze Trap": ItemEffects.QueueSlow(FreezeTrapSeconds, 0f); break;
-                case "Lag Trap": ItemEffects.QueueSlow(LagTrapSeconds, 0.5f); break;
+                case "Freeze Trap": ItemEffects.QueueTimeScale(FreezeTrapSeconds, 0f); break;
+                case "Lag Trap": ItemEffects.QueueTimeScale(LagTrapSeconds, 0.5f); break;
                 case "Generator Drain Trap": ItemEffects.QueueGeneratorDrain(); break;
                 default: UnlockState.Grant(name); break;
             }

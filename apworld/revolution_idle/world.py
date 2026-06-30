@@ -78,4 +78,5 @@ class RevolutionIdleWorld(World):
             "generators_goal_count", "generators_goal_level",
             "score_goal_exponent", "prestige_mult_goal_exponent", "achievement_count_goal",
             "freeze_trap_seconds", "lag_trap_seconds", "generator_drain_levels",
+            "generator_boost_levels", "overdrive_seconds", "income_jackpot_seconds",
         )

@@ -55,8 +55,9 @@ ITEM_TABLE: dict[str, tuple[int, ItemClassification]] = {
 
     # --- Filler / traps ---
     "Score Boost": (900, F),
-    "Time Flux": (901, F),
-    "Soul Cache": (902, F),
+    "Generator Boost": (901, F),   # (was an unused "Time Flux" placeholder; never placed)
+    "Income Jackpot": (902, F),    # (was an unused "Soul Cache" placeholder; never placed)
+    "Overdrive": (903, F),
     "Slowdown Trap": (950, T),
     "Freeze Trap": (951, T),
     "Generator Drain Trap": (952, T),
@@ -75,7 +76,8 @@ PROGRESSIVE_LAYER = "Progressive Layer"
 
 FILLER_ITEM_NAME = "Score Boost"
 TRAP_ITEM_NAME = "Slowdown Trap"
-# All trap types; when a filler slot rolls a trap, one of these is chosen at random.
+# All filler / trap types; a filler slot picks one at random (a trap if the trap_chance roll hits).
+FILLER_ITEMS = ["Score Boost", "Generator Boost", "Income Jackpot", "Overdrive"]
 TRAP_ITEMS = ["Slowdown Trap", "Freeze Trap", "Generator Drain Trap", "Lag Trap"]
 
 # Items required to win under the "equality" goal (completionist): every unlock that isn't a
@@ -100,7 +102,7 @@ class RevolutionIdleItem(Item):
 def get_random_filler_item_name(world: RevolutionIdleWorld) -> str:
     if world.random.randint(0, 99) < world.options.trap_chance:
         return world.random.choice(TRAP_ITEMS)
-    return FILLER_ITEM_NAME
+    return world.random.choice(FILLER_ITEMS)
 
 
 def _classification_for(world: RevolutionIdleWorld, name: str) -> ItemClassification:

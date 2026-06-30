@@ -199,6 +199,33 @@ class GeneratorDrainLevels(Range):
     default = 20
 
 
+class GeneratorBoostLevels(Range):
+    """Generator Boost (filler): how many levels each base generator gains (capped at its max)."""
+
+    display_name = "Generator Boost: Levels"
+    range_start = 1
+    range_end = 100
+    default = 20
+
+
+class OverdriveSeconds(Range):
+    """Overdrive (filler): how many seconds the game runs at double speed."""
+
+    display_name = "Overdrive: Seconds"
+    range_start = 1
+    range_end = 600
+    default = 60
+
+
+class IncomeJackpotSeconds(Range):
+    """Income Jackpot (filler): how many seconds' worth of current income it grants at once."""
+
+    display_name = "Income Jackpot: Seconds"
+    range_start = 1
+    range_end = 6000
+    default = 600
+
+
 @dataclass
 class RevolutionIdleOptions(PerGameCommonOptions):
     goal: Goal
@@ -218,12 +245,16 @@ class RevolutionIdleOptions(PerGameCommonOptions):
     freeze_trap_seconds: FreezeTrapSeconds
     lag_trap_seconds: LagTrapSeconds
     generator_drain_levels: GeneratorDrainLevels
+    generator_boost_levels: GeneratorBoostLevels
+    overdrive_seconds: OverdriveSeconds
+    income_jackpot_seconds: IncomeJackpotSeconds
     death_link: DeathLink
 
 
 option_groups = [
     OptionGroup("General", [Goal, ProgressiveLayers]),
     OptionGroup("Traps", [TrapChance, FreezeTrapSeconds, LagTrapSeconds, GeneratorDrainLevels]),
+    OptionGroup("Fillers", [GeneratorBoostLevels, OverdriveSeconds, IncomeJackpotSeconds]),
     OptionGroup("Goal Settings", [
         GeneratorsGoalCount, GeneratorsGoalLevel,
         ScoreGoalExponent, PrestigeMultGoalExponent, AchievementCountGoal,

@@ -12,6 +12,21 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.11.0] - 2026-06-29
+
+### Added
+- **Three new filler types** (a non-trap filler slot now picks one at random, including Score Boost):
+  - **Generator Boost** — every base generator gains `generator_boost_levels` levels (default 20,
+    capped at each generator's max). The friendly mirror of the Generator Drain trap.
+  - **Overdrive** — the game runs at double speed for `overdrive_seconds` (default 60). Mirror of Lag.
+  - **Income Jackpot** — grants `income_jackpot_seconds` of income at once (default 600), a bigger
+    one-shot than Score Boost.
+
+### Changed
+- The timeScale effect (Freeze/Lag/Overdrive) now uses last-wins semantics so speed-ups (factor > 1)
+  and slow-downs coexist cleanly. (The two unused filler placeholders were repurposed into the new
+  fillers; they had never been placed.)
+
 ## [0.10.0] - 2026-06-29
 
 ### Added
