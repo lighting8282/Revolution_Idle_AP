@@ -38,7 +38,7 @@ class AscensionGoal(Range):
     display_name = "Ascension Goal: Total Levels"
     range_start = 1
     range_end = 2_000_000
-    default = 5000
+    default = 2000
 
 
 class ScoreGoalExponent(Range):

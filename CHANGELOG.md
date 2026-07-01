@@ -20,6 +20,14 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
   color-coded (received = green, you-found = blue, hints = yellow, joins = light blue, goals = gold)
   and fade out after ~12s. Toggle with **F2**; default on (config: `[Overlay] Show Feed`).
 
+## [0.15.1] - 2026-06-30
+
+### Changed
+- Lowered the `ascension` goal's default (`ascension_goal`) from 5000 to **2000**. Calibrated against
+  the game's own achievement #64 ("Ascended a Lot!", all 10 colors at Ascension 40+ = 400 total,
+  Infinity tier) — 5000 was ~12x that; 2000 is a more reasonable default long run. Still fully
+  tunable via the option.
+
 ## [0.15.0] - 2026-06-30
 
 ### Added

@@ -44,7 +44,7 @@ public class ArchipelagoClient
     public int AscCheckInterval { get; private set; } = 500;
 
     // From slot_data: thresholds for the ascension / score / prestige_mult / achievement_count goals.
-    public long AscensionGoal { get; private set; } = 5000;
+    public long AscensionGoal { get; private set; } = 2000;
     public int ScoreGoalExponent { get; private set; } = 100;
     public int PrestigeMultGoalExponent { get; private set; } = 30;
     public int AchievementCountGoal { get; private set; } = 250;

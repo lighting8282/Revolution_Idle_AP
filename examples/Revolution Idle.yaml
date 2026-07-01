@@ -34,7 +34,7 @@ game: Revolution Idle
 requires:
   version: 0.6.7 # Version of Archipelago required for this yaml to work as expected.
   game:
-    Revolution Idle: 0.15.0 # Version of the world required for this yaml to work as expected.
+    Revolution Idle: 0.15.1 # Version of the world required for this yaml to work as expected.
 
 Revolution Idle:
   ################
@@ -202,7 +202,7 @@ Revolution Idle:
     # You can define additional values between the minimum and maximum values.
     # Minimum value is 1
     # Maximum value is 2000000
-    5000: 50
+    2000: 50
     random: 0
     random-low: 0 # random value weighted towards lower values
     random-high: 0 # random value weighted towards higher values
