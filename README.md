@@ -12,15 +12,50 @@ This repo has two parts:
 
 ## Download / Install
 
-Grab the latest [**release**](https://github.com/lighting8282/Revolution_Idle_AP/releases/latest).
+### What you need
 
-- `RevolutionIdleAP-vX.Y.Z.zip` — everything: the apworld, the mod, a **pre-patched BepInEx**, and
-  setup instructions. (Stock BepInEx can't load this game's Unity build, so a patched one is bundled.)
-- `revolution_idle.apworld` — the apworld on its own, if you only need to generate.
+- [Revolution Idle](https://store.steampowered.com/app/2763740/) installed (Steam, Windows)
+- [Archipelago](https://archipelago.gg/tutorial/Archipelago/setup/en) 0.6.7 or newer
+- The latest [**release**](https://github.com/lighting8282/Revolution_Idle_AP/releases/latest)
 
-Full install steps are in the zip's `README.md`. In short: drop the `.apworld` into Archipelago's
-`custom_worlds/`, extract `Install-into-Game-Folder/` into your game folder, launch once (first run
-builds mod support, ~2–4 min), then press **F1** in-game to open the connection menu and connect.
+The release page has two downloads:
+
+| File | Who needs it |
+|---|---|
+| `RevolutionIdleAP-vX.Y.Z.zip` | **Players.** The apworld, the game mod, a pre-patched BepInEx, and setup instructions. |
+| `revolution_idle.apworld` | **Hosts who only generate** the multiworld and don't play the game themselves. |
+
+> **Why a pre-patched BepInEx?** Stock BepInEx builds can't load this game's Unity version, so a
+> patched copy is bundled — don't substitute your own.
+
+### 1. Install the apworld
+
+Double-click `revolution_idle.apworld` (Archipelago will install it), or copy it into Archipelago's
+`custom_worlds/` folder (e.g. `C:\ProgramData\Archipelago\custom_worlds\`).
+
+Generating only? You're done — the remaining steps are for players.
+
+### 2. Install the mod into the game
+
+1. Unzip `RevolutionIdleAP-vX.Y.Z.zip`.
+2. Copy the **contents** of its `Install-into-Game-Folder/` directory into your Revolution Idle
+   install folder (Steam → right-click the game → *Manage* → *Browse local files*), merging with
+   what's there.
+
+### 3. First launch
+
+Start the game once and wait — the first run builds the mod's interop support and takes **2–4
+minutes** before the game window appears. Later launches are normal speed.
+
+### 4. Connect
+
+In-game, press **F1**, enter the server address, port, slot name, and password (if any), and hit
+Connect. Your values are remembered for next time.
+
+The mod plays in **AP Mode**: an isolated save that never touches your normal cloud save and starts
+fresh for each new seed. See [Features](#features) for details.
+
+More detail (troubleshooting, updating, uninstalling) is in the `README.md` inside the zip.
 
 ## Features
 
