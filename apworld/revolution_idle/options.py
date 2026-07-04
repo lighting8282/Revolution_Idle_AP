@@ -125,6 +125,23 @@ class SecretAchievements(Toggle):
     display_name = "Secret Achievements"
 
 
+class ScaleAchievementsToGoal(Toggle):
+    """
+    Automatically skip achievements from tiers deeper than your chosen goal requires.
+
+    On (default): e.g. with goal:infinity, achievements_eternity/achievements_unity are ignored (0
+    achievements from those tiers) regardless of their configured count, so you aren't forced to
+    reach Eternity/Unity just to fill your own achievement checks in a short run.
+
+    Off: achievements_base/infinity/eternity/unity are fully independent of the goal (their
+    configured counts always apply) — useful if you want a shallow goal but still want achievement
+    variety from deeper tiers.
+    """
+
+    display_name = "Scale Achievements To Goal"
+    default = 1
+
+
 class AscensionCheckCount(Range):
     """
     How many ascension-milestone checks to add (0 disables them).
@@ -262,6 +279,7 @@ class RevolutionIdleOptions(PerGameCommonOptions):
     achievements_eternity: AchievementsEternity
     achievements_unity: AchievementsUnity
     secret_achievements: SecretAchievements
+    scale_achievements_to_goal: ScaleAchievementsToGoal
     ascension_check_count: AscensionCheckCount
     ascension_check_interval: AscensionCheckInterval
     ascension_checks_progression: AscensionChecksProgression
@@ -286,7 +304,7 @@ option_groups = [
     ]),
     OptionGroup("Achievement Checks", [
         AchievementsBase, AchievementsInfinity, AchievementsEternity, AchievementsUnity,
-        SecretAchievements,
+        SecretAchievements, ScaleAchievementsToGoal,
     ]),
     OptionGroup("Ascension Checks", [
         AscensionCheckCount, AscensionCheckInterval, AscensionChecksProgression,

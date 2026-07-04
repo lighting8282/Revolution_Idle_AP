@@ -20,6 +20,17 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
   color-coded (received = green, you-found = blue, hints = yellow, joins = light blue, goals = gold)
   and fade out after ~12s. Toggle with **F2**; default on (config: `[Overlay] Show Feed`).
 
+## [0.16.0] - 2026-07-04
+
+### Added
+- **`scale_achievements_to_goal` option (default on)** — achievement tiers deeper than your chosen
+  goal requires are now automatically skipped (0 achievements), regardless of their configured
+  count. Previously `achievements_base/infinity/eternity/unity` were fully independent of `goal`, so
+  e.g. `goal: infinity` with default achievement counts still required reaching Eternity/Unity just
+  to fill your own achievement checks — silently breaking the "short run" intent. Turn the option off
+  to restore that fully-independent behavior (useful if you want a shallow goal with deep achievement
+  variety). Correctly accounts for `achievement_count`'s own goal-depth gating.
+
 ## [0.15.1] - 2026-06-30
 
 ### Changed

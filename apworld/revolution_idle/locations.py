@@ -77,6 +77,9 @@ TIERS: list[tuple[int, int, str, str]] = [
 # only ever expects them once everything is unlocked (a safe over-approximation of reachability).
 SECRET_REGION = "Unity"
 
+# How deep each tower region sits, for comparing against how deep the chosen goal requires.
+REGION_DEPTH: dict[str, int] = {"Menu": 0, "Infinity": 1, "Eternity": 2, "Unity": 3}
+
 
 def ach_location_name(game_id: int) -> str:
     return f"Achievement #{game_id}"
@@ -123,10 +126,19 @@ class RevolutionIdleLocation(Location):
 def selected_achievement_ids(world: RevolutionIdleWorld) -> dict[str, list[int]]:
     """Per tier, sample the requested number of achievement ids (deterministically via world.random).
 
+    If scale_achievements_to_goal is on (default), tiers deeper than what the chosen goal requires
+    are skipped entirely (0 achievements) regardless of their configured count — so e.g. goal:infinity
+    doesn't force you to also reach Eternity/Unity just to fill your own Eternity/Unity achievement
+    checks. Turn the option off to keep tiers fully independent of the goal.
+
     Returns {region_name: [game_ids]}."""
     rng = world.random
     by_region: dict[str, list[int]] = {}
+    scale = bool(world.options.scale_achievements_to_goal)
+    goal_depth = REGION_DEPTH[world.goal_region_name]
     for start, end, region_name, option_attr in TIERS:
+        if scale and REGION_DEPTH[region_name] > goal_depth:
+            continue
         n = getattr(world.options, option_attr).value
         ids = list(range(start, end))
         if n < len(ids):
