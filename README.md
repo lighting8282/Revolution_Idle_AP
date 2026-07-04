@@ -62,7 +62,9 @@ More detail (troubleshooting, updating, uninstalling) is in the `README.md` insi
 **Location checks**
 - Up to **520 achievement** checks, split into the game's own tiers — pick how many of each become
   checks with `achievements_base` / `achievements_infinity` / `achievements_eternity` /
-  `achievements_unity` (defaults = the full 520).
+  `achievements_unity` (defaults = the full 520). By default (`scale_achievements_to_goal`), tiers
+  deeper than your chosen goal are automatically skipped, so a shallow goal like `infinity` stays a
+  short run instead of silently requiring Eternity/Unity to fill your own achievement checks.
 - Optional **55 secret achievements** (`secret_achievements`).
 - **10 generator** checks (own each base generator), plus optional **per-level** checks every N
   levels on each generator (`generator_level_interval`).
