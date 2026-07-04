@@ -145,7 +145,8 @@ mod/RevolutionIdleAP/      the BepInEx plugin (C#) + SETUP.md (toolchain notes)
 build_apworld.py           build dist/revolution_idle.apworld
 build_release.py           assemble dist/RevolutionIdleAP-vX.Y.Z.zip
 reset-save.ps1             back up / wipe / restore the save for clean runs
-DESIGN.md                  design + reverse-engineering notes
+DESIGN.md                  current architecture + reverse-engineering notes
+DEVLOG.md                  the chronological story of how this was built (incl. dead ends)
 CHANGELOG.md               version history
 ```
 
