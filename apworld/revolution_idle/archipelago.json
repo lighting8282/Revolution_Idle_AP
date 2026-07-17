@@ -1,8 +1,10 @@
 {
 	"game": "Revolution Idle",
 	"minimum_ap_version": "0.6.7",
-	"world_version": "0.16.0",
-	"authors": ["lighting8282"],
+	"world_version": "0.17.0",
+	"authors": [
+		"lighting8282"
+	],
 	"compatible_version": 7,
 	"version": 7
 }

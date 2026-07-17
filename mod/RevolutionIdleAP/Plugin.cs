@@ -17,7 +17,7 @@ public class Plugin : BasePlugin
 {
     public const string Guid = "com.jontrnka.revolutionidle.ap";
     public const string Name = "Revolution Idle Archipelago";
-    public const string Version = "0.16.0";
+    public const string Version = "0.17.0";
 
     internal static ManualLogSource Logger = null!;
     public static ArchipelagoClient? Client;
@@ -77,6 +77,7 @@ public class Plugin : BasePlugin
         harmony.PatchAll(typeof(NakamaSteamAuthPatch));
         harmony.PatchAll(typeof(NakamaInitializePatch));
         harmony.PatchAll(typeof(SaveIsolationPatches));
+        harmony.PatchAll(typeof(RevolutionSpeedPatch));
         UnlockState.PatchGetters(harmony);
 
         ClassInjector.RegisterTypeInIl2Cpp<RevApTicker>();

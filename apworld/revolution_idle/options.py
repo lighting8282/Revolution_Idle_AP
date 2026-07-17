@@ -176,6 +176,24 @@ class AscensionChecksProgression(Toggle):
     display_name = "Ascension Checks Can Hold Progression"
 
 
+class RevolutionSpeedMultiplier(Range):
+    """
+    Multiplies how fast the revolutions (the circles) fill — the core loop of the game.
+
+    Default 10 (10x vanilla speed), since a 1x idle grind makes for a very long multiworld. Set to 1
+    for untouched vanilla pacing.
+
+    Note: this speeds up everything downstream of the revolutions, so goal thresholds
+    (ascension_goal, score_goal_exponent, prestige_mult_goal_exponent) are reached proportionally
+    faster — their defaults are calibrated against vanilla (1x) pacing.
+    """
+
+    display_name = "Revolution Speed Multiplier"
+    range_start = 1
+    range_end = 1000
+    default = 10
+
+
 class GeneratorLevelInterval(Range):
     """
     Add a location check every N levels on each of the 10 base generators (each generator levels up
@@ -283,6 +301,7 @@ class RevolutionIdleOptions(PerGameCommonOptions):
     ascension_check_count: AscensionCheckCount
     ascension_check_interval: AscensionCheckInterval
     ascension_checks_progression: AscensionChecksProgression
+    revolution_speed_multiplier: RevolutionSpeedMultiplier
     generator_level_interval: GeneratorLevelInterval
     progressive_layers: ProgressiveLayers
     trap_chance: TrapChance
@@ -310,4 +329,5 @@ option_groups = [
         AscensionCheckCount, AscensionCheckInterval, AscensionChecksProgression,
     ]),
     OptionGroup("Generator Checks", [GeneratorLevelInterval]),
+    OptionGroup("Game Speed", [RevolutionSpeedMultiplier]),
 ]

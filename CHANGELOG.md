@@ -20,6 +20,17 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
   color-coded (received = green, you-found = blue, hints = yellow, joins = light blue, goals = gold)
   and fade out after ~12s. Toggle with **F2**; default on (config: `[Overlay] Show Feed`).
 
+## [0.17.0] - 2026-07-14
+
+### Added
+- **`revolution_speed_multiplier` option (default 10)** — multiplies how fast the revolutions (the
+  circles) fill, i.e. the game's core loop. A 1x idle grind makes for a very long multiworld, so AP
+  runs now default to **10x** speed. Set to `1` for untouched vanilla pacing.
+  - Implemented as a Harmony prefix scaling the `speedMult` argument of `Revolution.Update`.
+  - **Note:** this speeds up everything downstream of the revolutions, so goal thresholds
+    (`ascension_goal`, `score_goal_exponent`, `prestige_mult_goal_exponent`) are reached
+    proportionally faster — their defaults were calibrated against vanilla (1x) pacing.
+
 ## [0.16.0] - 2026-07-04
 
 ### Added

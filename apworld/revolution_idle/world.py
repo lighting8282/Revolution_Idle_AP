@@ -76,7 +76,7 @@ class RevolutionIdleWorld(World):
         return self.options.as_dict(
             "goal", "death_link",
             "ascension_goal", "ascension_check_count", "ascension_check_interval",
-            "generator_level_interval",
+            "generator_level_interval", "revolution_speed_multiplier",
             "score_goal_exponent", "prestige_mult_goal_exponent", "achievement_count_goal",
             "freeze_trap_seconds", "lag_trap_seconds", "generator_drain_levels",
             "generator_boost_levels", "overdrive_seconds", "income_jackpot_seconds",

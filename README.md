@@ -101,6 +101,9 @@ More detail (troubleshooting, updating, uninstalling) is in the `README.md` insi
   and **auto-starts fresh per seed** (resumes the same seed). It's effectively a separate "AP version"
   of the game. Toggle it from the **F1 menu** (auto-restarts) or launch the bundled
   `Play Revolution Idle (AP).bat`.
+- **10x game speed by default** — `revolution_speed_multiplier` (default `10`) speeds up how fast the
+  revolutions fill, since a 1x idle grind makes for a very long multiworld. Set it to `1` for vanilla
+  pacing. Goal thresholds are calibrated against 1x, so they're reached proportionally faster at 10x.
 - `death_link` option is accepted but is a no-op (the game has no death mechanic).
 
 ### YAML
@@ -130,6 +133,7 @@ Revolution Idle:
   ascension_check_interval: 500
   generator_level_interval: 0 # 0 = off; else a check every N levels on each of the 10 generators
   progressive_layers: false
+  revolution_speed_multiplier: 10  # 10x revolution fill speed; 1 = vanilla pacing
   trap_chance: 10             # 0-100; when a trap rolls, its type is random
   death_link: false
   # Goal-specific thresholds (generators_goal_*, score_goal_exponent, ...) and trap/filler

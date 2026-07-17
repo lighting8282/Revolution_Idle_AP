@@ -36,6 +36,9 @@ public class ArchipelagoClient
     public int Goal { get; private set; } = 0;
     public bool GoalSent { get; private set; }
 
+    // From slot_data: multiplier on how fast the revolutions fill (1 = vanilla speed).
+    public int RevolutionSpeedMultiplier { get; private set; } = 1;
+
     // From slot_data: a generator-level check every N levels (0 = disabled).
     public int GenLevelInterval { get; private set; } = 0;
 
@@ -114,6 +117,8 @@ public class ArchipelagoClient
             Connected = true;
             if (success.SlotData != null && success.SlotData.TryGetValue("goal", out var g) && g != null)
                 Goal = Convert.ToInt32(g);
+            if (success.SlotData != null && success.SlotData.TryGetValue("revolution_speed_multiplier", out var rsm) && rsm != null)
+                RevolutionSpeedMultiplier = Convert.ToInt32(rsm);
             if (success.SlotData != null && success.SlotData.TryGetValue("generator_level_interval", out var gli) && gli != null)
                 GenLevelInterval = Convert.ToInt32(gli);
             if (success.SlotData != null && success.SlotData.TryGetValue("ascension_check_count", out var acc) && acc != null)

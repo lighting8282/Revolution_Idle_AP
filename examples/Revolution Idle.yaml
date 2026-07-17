@@ -34,7 +34,7 @@ game: Revolution Idle
 requires:
   version: 0.6.7 # Version of Archipelago required for this yaml to work as expected.
   game:
-    Revolution Idle: 0.15.1 # Version of the world required for this yaml to work as expected.
+    Revolution Idle: 0.17.0 # Version of the world required for this yaml to work as expected.
 
 Revolution Idle:
   ################
@@ -307,6 +307,19 @@ Revolution Idle:
     'false': 50
     'true': 0
 
+  scale_achievements_to_goal:
+    # Automatically skip achievements from tiers deeper than your chosen goal requires.
+    # 
+    # On (default): e.g. with goal:infinity, achievements_eternity/achievements_unity are ignored (0
+    # achievements from those tiers) regardless of their configured count, so you aren't forced to
+    # reach Eternity/Unity just to fill your own achievement checks in a short run.
+    # 
+    # Off: achievements_base/infinity/eternity/unity are fully independent of the goal (their
+    # configured counts always apply) — useful if you want a shallow goal but still want achievement
+    # variety from deeper tiers.
+    'false': 0
+    'true': 50
+
   ####################
   # Ascension Checks #
   ####################
@@ -363,6 +376,28 @@ Revolution Idle:
     random-low: 0 # random value weighted towards lower values
     random-high: 0 # random value weighted towards higher values
     random-range-0-100: 0 # random value between 0 and 100
+
+  ##############
+  # Game Speed #
+  ##############
+  revolution_speed_multiplier:
+    # Multiplies how fast the revolutions (the circles) fill — the core loop of the game.
+    # 
+    # Default 10 (10x vanilla speed), since a 1x idle grind makes for a very long multiworld. Set to 1
+    # for untouched vanilla pacing.
+    # 
+    # Note: this speeds up everything downstream of the revolutions, so goal thresholds
+    # (ascension_goal, score_goal_exponent, prestige_mult_goal_exponent) are reached proportionally
+    # faster — their defaults are calibrated against vanilla (1x) pacing.
+    #
+    # You can define additional values between the minimum and maximum values.
+    # Minimum value is 1
+    # Maximum value is 1000
+    10: 50
+    random: 0
+    random-low: 0 # random value weighted towards lower values
+    random-high: 0 # random value weighted towards higher values
+    random-range-1-1000: 0 # random value between 1 and 1000
 
   ###########################
   # Item & Location Options #
