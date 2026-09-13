@@ -12,14 +12,6 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
-## [0.12.0] - 2026-06-30
-
-### Added
-- **In-game message feed overlay** — a top-right feed shows live AP activity: checks you find, items
-  you receive, other players joining/leaving, hints, chat, goals, and countdowns. Messages are
-  color-coded (received = green, you-found = blue, hints = yellow, joins = light blue, goals = gold)
-  and fade out after ~12s. Toggle with **F2**; default on (config: `[Overlay] Show Feed`).
-
 ## [0.17.0] - 2026-07-14
 
 ### Added
@@ -106,6 +98,14 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
   Awake doesn't check it. AP Mode now skips `InternalAwake` outright (a plain void method that
   patches reliably), so the cloud subsystem never starts and the error can't occur. Normal play
   unaffected.
+
+## [0.12.0] - 2026-06-30
+
+### Added
+- **In-game message feed overlay** — a top-right feed shows live AP activity: checks you find, items
+  you receive, other players joining/leaving, hints, chat, goals, and countdowns. Messages are
+  color-coded (received = green, you-found = blue, hints = yellow, joins = light blue, goals = gold)
+  and fade out after ~12s. Toggle with **F2**; default on (config: `[Overlay] Show Feed`).
 
 ## [0.11.3] - 2026-06-30
 
