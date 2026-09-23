@@ -22,6 +22,18 @@ public class RevApTicker : MonoBehaviour
         try { ItemEffects.UpdateTimeEffects(); }
         catch (Exception e) { Plugin.Logger.LogError("[AP] time-effect error: " + e.Message); }
 
+        // One-shot state dump — runs independently of any AP connection.
+        try { DiagnosticDump.TryRunOnce(); }
+        catch (Exception e) { Plugin.Logger.LogError("[AP] diagnostic error: " + e.Message); }
+
+        // F3: dump on demand. Use this once your save is actually loaded — the automatic launch
+        // dump fires before the save deserializes, so its flags/progress read as empty.
+        if (Input.GetKeyDown(KeyCode.F3))
+        {
+            try { DiagnosticDump.RunNow(); }
+            catch (Exception e) { Plugin.Logger.LogError("[AP] diagnostic error: " + e.Message); }
+        }
+
         _timer += Time.deltaTime;
         if (_timer < 1f) return;
         _timer = 0f;

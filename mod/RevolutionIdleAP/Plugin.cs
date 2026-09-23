@@ -36,6 +36,10 @@ public class Plugin : BasePlugin
     // In-game message feed overlay (toggled with F2).
     public static bool ShowFeed = true;
 
+    // Diagnostics: one-shot dump of live game state (tier ranges, flags, new members) for
+    // re-verifying the mod/apworld against a new game build. See DiagnosticDump.
+    public static bool RunDiagnostic = true;
+
     // In-game connection menu state (toggled with F1). Seeded from the config file, and written back
     // on connect so the last-entered values are remembered next launch.
     public static bool ShowMenu = true;
@@ -65,6 +69,9 @@ public class Plugin : BasePlugin
         var enabled = Config.Bind("Connection", "Enabled", true, "Auto-connect on startup using the values above").Value;
         ShowFeed = Config.Bind("Overlay", "Show Feed", true,
             "Show the in-game AP message feed (checks, joins, hints, chat). Toggle in-game with F2.").Value;
+        RunDiagnostic = Config.Bind("Diagnostics", "Dump On Launch", true,
+            "Write BepInEx/revidle_diagnostic.txt once per launch with live game state (achievement tier "
+            + "ranges, unlock flag indices, new game members). Used to re-verify the mod after a game update.").Value;
         _apModeEntry = Config.Bind("AP Mode", "Enabled", false,
             "Run offline with an isolated save so AP play never touches your normal cloud save (and can start fresh per seed). Turn OFF for normal play.");
         APMode = _apModeEntry.Value;
