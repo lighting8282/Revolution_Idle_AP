@@ -10,6 +10,24 @@ This repo has two parts:
 - **apworld** — the Archipelago world (`apworld/revolution_idle/`)
 - **mod** — a BepInEx plugin that bridges the running game to the AP server (`mod/RevolutionIdleAP/`)
 
+## Contents
+
+- [Download / Install](#download--install)
+  - [What you need](#what-you-need)
+  - [1. Install the apworld](#1-install-the-apworld)
+  - [2. Install the mod into the game](#2-install-the-mod-into-the-game)
+  - [3. First launch](#3-first-launch)
+  - [4. Connect](#4-connect)
+- [Features](#features)
+  - [YAML](#yaml)
+- [Repository layout](#repository-layout)
+- [Building from source](#building-from-source)
+- [Status](#status)
+- [Credits & license](#credits--license)
+
+Also in this repo: [`DESIGN.md`](DESIGN.md) (current architecture), [`DEVLOG.md`](DEVLOG.md) (how it
+was built, including dead ends), and [`CHANGELOG.md`](CHANGELOG.md) (version history).
+
 ## Download / Install
 
 ### What you need
