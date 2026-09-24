@@ -11,6 +11,24 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.21.0] - 2026-09-24
+
+### Added
+- **Third-party licence compliance.** The release bundles a patched BepInEx, UnityDoorstop,
+  Il2CppInterop, Dobby and the .NET runtime, but shipped **no licence texts at all** — BepInEx and
+  Doorstop are LGPL-2.1, Il2CppInterop is LGPL-3.0 and Dobby is Apache-2.0, all of which require the
+  licence to travel with the binaries.
+  - New `THIRD-PARTY-NOTICES.md` lists every bundled component with its licence and upstream URL,
+    each one verified against the upstream project rather than assumed, and records that the BepInEx
+    build is patched and Cpp2IL rebuilt.
+  - New `licenses/` folder with the full LGPL-2.1, LGPL-3.0, GPL-3.0, Apache-2.0 and MIT texts,
+    fetched from gnu.org and apache.org.
+  - `build_release.py` ships `LICENSE`, the notices and `licenses/` in the zip.
+- **"Respecting the game" section** in both READMEs, stating plainly that no game code or assets are
+  redistributed, that AP play is offline and save-isolated so nothing reaches Oni Gaming's servers or
+  leaderboards, that the mod is inert during normal play, and that the project will be taken down or
+  amended on request.
+
 ## [0.20.4] - 2026-09-24
 
 ### Changed

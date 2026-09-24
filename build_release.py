@@ -11,6 +11,7 @@ Produces dist/RevolutionIdleAP-v<version>.zip containing:
   - Revolution Idle.yaml                       (-> Archipelago/Players; the options template)
   - reset-save.ps1
   - README.md
+  - LICENSE, THIRD-PARTY-NOTICES.md, licenses/  (bundled components incl. LGPL/Apache)
 
 Pulls the BepInEx setup from the live game install (already patched + working). Excludes
 per-user/generated content (interop, unity-libs, logs, configs) so the user generates fresh.
@@ -73,6 +74,12 @@ def stage_release() -> None:
     shutil.copy2(ROOT / "reset-save.ps1", STAGE / "reset-save.ps1")
     shutil.copy2(ROOT / "RELEASE_README.md", STAGE / "README.md")
     shutil.copy2(template_path(), STAGE / TEMPLATE_NAME)
+
+    # Licences. The release bundles LGPL/Apache components (BepInEx, Doorstop, Il2CppInterop,
+    # Dobby), so the licence texts and the attribution notice have to travel with it.
+    shutil.copy2(ROOT / "LICENSE", STAGE / "LICENSE")
+    shutil.copy2(ROOT / "THIRD-PARTY-NOTICES.md", STAGE / "THIRD-PARTY-NOTICES.md")
+    shutil.copytree(ROOT / "licenses", STAGE / "licenses")
 
 
 TEMPLATE_NAME = "Revolution Idle.yaml"

@@ -23,6 +23,7 @@ This repo has two parts:
 - [Repository layout](#repository-layout)
 - [Building from source](#building-from-source)
 - [Status](#status)
+- [Respecting the game](#respecting-the-game)
 - [Credits & license](#credits--license)
 
 Also in this repo: [`DESIGN.md`](DESIGN.md) (current architecture), [`DEVLOG.md`](DEVLOG.md) (how it
@@ -228,13 +229,41 @@ and generator checks. Known limitations (see [`CHANGELOG.md`](CHANGELOG.md)):
   fails and the game catches it — AP play is unaffected). It can't be suppressed from the mod because
   it runs in the game's async startup before/outside anything the mod can intercept.
 
+## Respecting the game
+
+This is an unofficial, non-commercial fan project. It's built to stay out of Oni Gaming's way:
+
+- **No game code or assets are redistributed.** The mod is built against interop assemblies
+  generated from *your own* installed copy, on your own machine, the first time you launch it —
+  which is why that first launch takes a few minutes. Nothing derived from `GameAssembly.dll` or
+  the game's data is in this repository or in the release.
+- **AP play never reaches Oni Gaming's servers.** AP Mode is required to connect, and it runs the
+  game offline against an isolated save. Modified state is never uploaded, never syncs to the cloud
+  save, and never touches leaderboards.
+- **Installing the mod doesn't change normal play.** With no Archipelago connection the mod does
+  nothing: unlocks only apply to items actually received, the speed multiplier only applies when a
+  seed sets one, and no game state is written. Launch the game normally and it behaves exactly as
+  shipped.
+- **Nothing is written to your save file on disk.** The mod only affects the running game in memory.
+- **Steam achievements are blocked while AP is driving the game**, so an AP run can't award real
+  achievements.
+
+Third-party components bundled with the release are listed in
+[`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md), with full licence texts in
+[`licenses/`](licenses/).
+
+If Oni Gaming would prefer this project not exist, or want anything changed about it, please
+[open an issue](https://github.com/lighting8282/Revolution_Idle_AP/issues) or get in touch — it'll
+be taken down or amended on request.
+
 ## Credits & license
 
 Original code is MIT (see [`LICENSE`](LICENSE)). Built on
 [Archipelago](https://github.com/ArchipelagoMW/Archipelago),
 [Archipelago.MultiClient.Net](https://github.com/ArchipelagoMW/Archipelago.MultiClient.Net),
 [BepInEx](https://github.com/BepInEx/BepInEx), and
-[Cpp2IL](https://github.com/SamboyCoding/Cpp2IL); bundled binaries keep their own licenses.
+[Cpp2IL](https://github.com/SamboyCoding/Cpp2IL). Every bundled component and its licence is
+listed in [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md), with full texts in [`licenses/`](licenses/).
 
 Revolution Idle © Oni Gaming. Unofficial, non-commercial fan project — not affiliated with or
 endorsed by Oni Gaming.

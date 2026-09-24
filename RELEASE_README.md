@@ -110,10 +110,33 @@ happens in AP Mode.
 - **Red cloud/session error on launch in AP Mode** — harmless. The game's own cloud login fails
   because AP Mode is offline, and the game catches it.
 
+## Respecting the game
+
+This is an unofficial, non-commercial fan project, built to stay out of Oni Gaming's way:
+
+- **No game code or assets are redistributed.** The mod builds against interop assemblies generated
+  from your own installed copy, on your machine, at first launch — that's what the 2–4 minute wait
+  is. Nothing derived from the game ships in this download.
+- **AP play never reaches Oni Gaming's servers.** AP Mode is required to connect and runs offline
+  against an isolated save: nothing uploads, nothing syncs to your cloud save, nothing touches
+  leaderboards.
+- **Installing the mod doesn't change normal play.** With no Archipelago connection it does nothing
+  — launch the game normally and it behaves exactly as shipped.
+- **Nothing is written to your save file on disk**, and Steam achievements are blocked while AP is
+  driving the game.
+
+Bundled third-party components and their licences are listed in `THIRD-PARTY-NOTICES.md`, with full
+texts in `licenses/`.
+
+If Oni Gaming would prefer this project not exist, or want anything changed, please open an issue at
+https://github.com/lighting8282/Revolution_Idle_AP/issues — it'll be taken down or amended on
+request.
+
 ## Credits & licenses
 
 - [Archipelago](https://github.com/ArchipelagoMW/Archipelago) and
   [Archipelago.MultiClient.Net](https://github.com/ArchipelagoMW/Archipelago.MultiClient.Net)
 - [BepInEx](https://github.com/BepInEx/BepInEx) (bundled) and
   [Cpp2IL](https://github.com/SamboyCoding/Cpp2IL) (rebuilt for this game's Unity version)
+- Full component list and licences: `THIRD-PARTY-NOTICES.md` and `licenses/`
 - Revolution Idle © Oni Gaming. This is an unofficial fan mod.

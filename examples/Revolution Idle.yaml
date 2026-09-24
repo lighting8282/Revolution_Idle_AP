@@ -34,7 +34,7 @@ game: Revolution Idle
 requires:
   version: 0.6.7 # Version of Archipelago required for this yaml to work as expected.
   game:
-    Revolution Idle: 0.20.4 # Version of the world required for this yaml to work as expected.
+    Revolution Idle: 0.21.0 # Version of the world required for this yaml to work as expected.
 
 Revolution Idle:
   ################
