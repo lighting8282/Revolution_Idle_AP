@@ -12,6 +12,19 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.18.1] - 2026-09-24
+
+### Fixed
+- **The AP Mode toggle still relaunched the game without BepInEx** (0.17.3's working-directory fix
+  addressed a real problem but not this one). Doorstop stamps `DOORSTOP_INITIALIZED` into its own
+  process environment so it can't re-enter itself, and **child processes inherit that environment**.
+  The relaunched game saw the marker and skipped loading BepInEx altogether, so it started and
+  played normally with no mod in it — which is why the symptom looked like "the F1 menu is gone"
+  and why launching the same shortcut from Explorer always worked (fresh environment).
+  - `RestartGame` now strips every `DOORSTOP_*` variable from the child environment, and logs which
+    ones it cleared.
+  - `launch.ps1` clears them too, so the launcher is safe whoever invokes it.
+
 ## [0.18.0] - 2026-09-24
 
 ### Changed

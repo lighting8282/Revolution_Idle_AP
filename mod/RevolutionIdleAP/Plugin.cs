@@ -17,7 +17,7 @@ public class Plugin : BasePlugin
 {
     public const string Guid = "com.jontrnka.revolutionidle.ap";
     public const string Name = "Revolution Idle Archipelago";
-    public const string Version = "0.18.0";
+    public const string Version = "0.18.1";
 
     internal static ManualLogSource Logger = null!;
     public static ArchipelagoClient? Client;
@@ -262,7 +262,19 @@ public class Plugin : BasePlugin
                 };
             }
 
-            Logger.LogInfo($"[AP] relaunching via {(System.IO.File.Exists(launcher) ? "launch.ps1" : "direct exe")} (cwd: {dir})");
+            // Doorstop stamps DOORSTOP_INITIALIZED into its own process environment so it can't
+            // re-enter itself. Child processes inherit that environment, so the relaunched game
+            // sees the marker and skips loading BepInEx entirely — the game starts and plays
+            // normally, just with no mod in it. That is what made the F1 menu "disappear" after an
+            // AP Mode toggle, and why launching the same shortcut from Explorer works fine (fresh
+            // environment). Strip the whole DOORSTOP_* set so the new process bootstraps cleanly.
+            var stale = new List<string>();
+            foreach (var k in psi.Environment.Keys)
+                if (k != null && k.StartsWith("DOORSTOP_", System.StringComparison.OrdinalIgnoreCase)) stale.Add(k);
+            foreach (var k in stale) psi.Environment.Remove(k);
+
+            Logger.LogInfo($"[AP] relaunching via {(System.IO.File.Exists(launcher) ? "launch.ps1" : "direct exe")} "
+                         + $"(cwd: {dir}; cleared {stale.Count} DOORSTOP_* var(s): {string.Join(", ", stale)})");
             Process.Start(psi);
         }
         catch (System.Exception e) { Logger.LogError("[AP] restart failed: " + e.Message); }

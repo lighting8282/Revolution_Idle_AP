@@ -16,6 +16,12 @@ param([switch]$AP)
 
 $ErrorActionPreference = "SilentlyContinue"
 $root = $PSScriptRoot
+
+# Doorstop stamps DOORSTOP_INITIALIZED into its process so it can't re-enter itself, and child
+# processes inherit it. If this script was started FROM the game (the in-game AP Mode toggle), the
+# marker would be inherited all the way down and the relaunched game would quietly run without
+# BepInEx. Clearing it here makes the launcher safe no matter who invoked it.
+Get-ChildItem Env: | Where-Object { $_.Name -like 'DOORSTOP_*' } | ForEach-Object { Remove-Item "Env:$($_.Name)" }
 $cfg  = Join-Path $root "BepInEx\config\com.jontrnka.revolutionidle.ap.cfg"
 $exe  = Join-Path $root "Revolution Idle.exe"
 

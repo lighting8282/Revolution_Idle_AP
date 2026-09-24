@@ -74,3 +74,10 @@ warning (one metadata-less interop stub) is harmless. Launch the game and check 
   game looks fine and only the mod is missing. Prefer the shipped `launch.ps1`, which passes
   `-WorkingDirectory`. Symptom to recognise: no new `Preloader` session appears in
   `BepInEx/LogOutput.log` for the relaunched process.
+- **...and it must also clear the inherited `DOORSTOP_*` environment.** Doorstop stamps
+  `DOORSTOP_INITIALIZED` into the game's process so it can't re-enter itself; a child process
+  inherits it and therefore boots with BepInEx disabled. This produces the *same* symptom as the
+  working-directory bug (game fine, mod absent) and survives fixing the working directory, so check
+  both. `Process.Start` with `UseShellExecute = false` can drop them via `psi.Environment.Remove`.
+  Launching the same shortcut by hand from Explorer works, which is a useful tell that the problem
+  is inherited process state rather than the shortcut itself.
