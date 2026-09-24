@@ -8,6 +8,7 @@ Produces dist/RevolutionIdleAP-v<version>.zip containing:
       BepInEx/core/                             (PATCHED toolchain: Cpp2IL .21 + matching deps)
       BepInEx/patchers/
       BepInEx/plugins/RevolutionIdleAP/         (plugin + AP client + Newtonsoft)
+  - Revolution Idle.yaml                       (-> Archipelago/Players; the options template)
   - reset-save.ps1
   - README.md
 
@@ -16,6 +17,8 @@ per-user/generated content (interop, unity-libs, logs, configs) so the user gene
 """
 import json
 import shutil
+import subprocess
+import sys
 import zipfile
 from pathlib import Path
 
@@ -69,6 +72,35 @@ def stage_release() -> None:
     # extras
     shutil.copy2(ROOT / "reset-save.ps1", STAGE / "reset-save.ps1")
     shutil.copy2(ROOT / "RELEASE_README.md", STAGE / "README.md")
+    shutil.copy2(template_path(), STAGE / TEMPLATE_NAME)
+
+
+TEMPLATE_NAME = "Revolution Idle.yaml"
+
+
+def refresh_template() -> None:
+    """Regenerate the YAML template from this build's apworld (best effort).
+
+    Needs a local Archipelago install, so a failure is a warning rather than a hard stop — the
+    committed template is still shipped, and the freshness check below decides whether to complain.
+    """
+    try:
+        subprocess.run([sys.executable, str(ROOT / "build_template.py")], check=True)
+    except Exception as e:
+        print(f"WARNING: could not regenerate the YAML template ({e}).")
+        print("         Shipping the committed examples/ copy instead.")
+
+
+def template_path() -> Path:
+    """The template to ship, warning loudly if it doesn't match this release's version."""
+    path = ROOT / "examples" / TEMPLATE_NAME
+    if not path.exists():
+        raise SystemExit(f"Missing {path} — run build_template.py.")
+    stamp = f"Revolution Idle: {PKG_VERSION}"
+    if stamp not in path.read_text(encoding="utf-8-sig"):
+        print(f"WARNING: {path.name} does not declare '{stamp}'.")
+        print("         It is out of date for this release; players may see stale option docs.")
+    return path
 
 
 def zip_release() -> Path:
@@ -85,6 +117,7 @@ def zip_release() -> Path:
 
 
 def main() -> None:
+    refresh_template()
     stage_release()
     out, files = zip_release()
     shutil.rmtree(STAGE)

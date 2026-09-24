@@ -14,6 +14,16 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 
 ## [0.20.2] - 2026-09-24
 
+### Added
+- **The YAML options template now ships as a release asset** (`Revolution-Idle-template.yaml`) and
+  inside the release zip, so players get a template matching the version they downloaded.
+- **`build_template.py`** regenerates that template from the built apworld via a local Archipelago
+  install, and `build_release.py` runs it automatically. The template is Archipelago's own output,
+  so hand-editing it lets it drift: the committed copy had been stale since 0.17.0, still declaring
+  that world version and missing option docs added later. The script installs the freshly built
+  apworld first and refuses to write a template that doesn't declare the current version, which
+  catches Archipelago silently generating from a cached build.
+
 ### Fixed
 - **The F1 menu clipped the "AP Mode is required" warning**, cutting off its last line ("Use the
   switch above first") and the bottom of the panel. The warning was given a fixed `4 * lineHeight`

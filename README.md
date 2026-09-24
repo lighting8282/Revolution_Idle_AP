@@ -42,6 +42,7 @@ The release page has two downloads:
 |---|---|
 | `RevolutionIdleAP-vX.Y.Z.zip` | **Players.** The apworld, the game mod, a pre-patched BepInEx, and setup instructions. |
 | `revolution_idle.apworld` | **Hosts who only generate** the multiworld and don't play the game themselves. |
+| `Revolution-Idle-template.yaml` | The options template for that version, if you just want the YAML on its own (it's also inside the zip). |
 
 > **Why a pre-patched BepInEx?** Stock BepInEx builds can't load this game's Unity version, so a
 > patched copy is bundled — don't substitute your own.
@@ -186,6 +187,7 @@ Revolution Idle:
 apworld/revolution_idle/   the Archipelago world (Python)
 mod/RevolutionIdleAP/      the BepInEx plugin (C#) + SETUP.md (toolchain notes)
 build_apworld.py           build dist/revolution_idle.apworld
+build_template.py          regenerate the YAML options template from the apworld
 build_release.py           assemble dist/RevolutionIdleAP-vX.Y.Z.zip
 reset-save.ps1             back up / wipe / restore the save for clean runs
 DESIGN.md                  current architecture + reverse-engineering notes
@@ -200,6 +202,9 @@ Requires Python 3.11–3.13, the .NET SDK (8 or 9), and a local copy of the game
 ```sh
 # apworld
 python build_apworld.py            # -> dist/revolution_idle.apworld
+
+# YAML options template (regenerated FROM the apworld by a local Archipelago; never hand-edit it)
+python build_template.py           # -> examples/Revolution Idle.yaml + dist/
 
 # mod (deploys into the game's BepInEx/plugins, then assemble the release)
 dotnet build mod/RevolutionIdleAP -c Release
