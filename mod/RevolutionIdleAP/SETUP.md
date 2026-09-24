@@ -61,3 +61,10 @@ warning (one metadata-less interop stub) is harmless. Launch the game and check 
 - Unlock *gates* still live at `achByte[N]` (Prestige=3, Promotion=11, Infinity=29, Eternity=69,
   Unity=160, Minerals=239) OR a currency threshold — force unlocks by Harmony-postfixing the
   `get_XxxUnlocked` getters (proven approach), never by writing `achByte`.
+- **Never write `GameData.unlockedAch` (or `achByte`) to make the UI show something.** `GameData`
+  has a `TriggerMissingAchievementsAsync()` that reconciles `unlockedAch` against Steam and fires
+  `Achievement.Trigger` for anything Steam is missing. Writing the list to "just mark the panel"
+  granted 500+ **real** Steam achievements on a test account. Steam achievements are account-global
+  (AP Mode's save isolation does not cover them) and cannot be cleared from inside the game.
+  Reflect state by patching the UI instead — `DisplayAchievementItem.Update` +
+  `overlayLocked.SetActive(false)` — and keep `SteamAchievementGuard` in place as a backstop.

@@ -12,6 +12,27 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.17.1] - 2026-09-23
+
+### Fixed
+- **Critical: receiving AP achievement checks unlocked hundreds of real Steam achievements.**
+  The in-game achievement panel sync (added in 0.10.0) marked AP-checked achievements by adding
+  their ids to `GameData.unlockedAch`. That list is exactly what the game's own
+  `GameData.TriggerMissingAchievementsAsync()` reconciles against Steam, so it dutifully pushed
+  every marked achievement to the player's Steam account — 500+ at once on a resync. **Steam
+  achievements are account-global, so AP Mode's save isolation does not cover them, and they
+  cannot be un-earned from in-game.**
+  - `AchievementSync` no longer writes *any* game state. It keeps the AP-checked set mod-side only.
+  - The panel is now updated by `AchievementDisplayPatches`, which hides each card's
+    `overlayLocked` UI object — genuinely visual-only, invisible to the save and to Steam.
+
+### Added
+- **`SteamAchievementGuard`** — a hard block on the Steam achievement API (`ISteamUserStats.
+  SetAchievement` and `Achievement.Trigger`) whenever AP Mode is on or an AP server is connected.
+  An AP run is a sandboxed alternate save and should not mint real Steam achievements at all, so
+  this closes the whole class of bug rather than just the one path that caused it. Blocked calls
+  are logged. Toggleable via `[AP Mode] Block Steam Achievements` (default on; leave it on).
+
 ## [0.17.0] - 2026-07-14
 
 ### Added

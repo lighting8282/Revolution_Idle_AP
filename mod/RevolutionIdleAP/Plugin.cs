@@ -17,7 +17,7 @@ public class Plugin : BasePlugin
 {
     public const string Guid = "com.jontrnka.revolutionidle.ap";
     public const string Name = "Revolution Idle Archipelago";
-    public const string Version = "0.17.0";
+    public const string Version = "0.17.1";
 
     internal static ManualLogSource Logger = null!;
     public static ArchipelagoClient? Client;
@@ -32,6 +32,11 @@ public class Plugin : BasePlugin
     // cloud save and can start fresh per seed.
     public static bool APMode = false;
     private static ConfigEntry<bool> _apModeEntry = null!;
+
+    // Safety: while AP drives the game, block the Steam achievement API entirely. Steam
+    // achievements are account-global, so AP Mode's save isolation does not cover them, and they
+    // can't be un-earned. See SteamAchievementGuard.
+    public static bool AllowSteamAchievementBlock = true;
 
     // In-game message feed overlay (toggled with F2).
     public static bool ShowFeed = true;
@@ -76,8 +81,16 @@ public class Plugin : BasePlugin
             "Run offline with an isolated save so AP play never touches your normal cloud save (and can start fresh per seed). Turn OFF for normal play.");
         APMode = _apModeEntry.Value;
         Logger.LogInfo($"[AP] AP Mode = {APMode}");
+        AllowSteamAchievementBlock = Config.Bind("AP Mode", "Block Steam Achievements", true,
+            "Block the Steam achievement API while AP Mode is on or an AP server is connected. Leave this ON. "
+            + "An AP run is a sandboxed save, so it should not award real Steam achievements — and Steam "
+            + "achievements cannot be un-earned once granted.").Value;
 
         var harmony = new Harmony(Guid);
+        harmony.PatchAll(typeof(SteamAchievementGuard.SetAchievementPatch));
+        harmony.PatchAll(typeof(SteamAchievementGuard.TriggerPatch));
+        harmony.PatchAll(typeof(AchievementDisplayPatches.ItemUpdatePatch));
+        harmony.PatchAll(typeof(AchievementDisplayPatches.SecretUpdatePatch));
         harmony.PatchAll(typeof(AchievementPatches));
         harmony.PatchAll(typeof(CloudPatches));
         harmony.PatchAll(typeof(NakamaHasInternetPatch));

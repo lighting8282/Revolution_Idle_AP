@@ -113,8 +113,12 @@ More detail (troubleshooting, updating, uninstalling) is in the `README.md` insi
   values; no config editing needed.
 - **F2 message feed overlay** — a bottom-left feed of live AP activity (checks, items, joins, hints,
   chat, goals), color-coded.
-- The in-game **achievement panel reflects AP-checked achievements** (visual only — no rewards),
-  staying in sync when you resume a seed or checks are collected remotely.
+- The in-game **achievement panel reflects AP-checked achievements** (visual only — no rewards, and
+  no game or Steam state is written), staying in sync when you resume a seed or checks are collected
+  remotely.
+- **Steam achievements are blocked during AP play** — while AP Mode is on or a server is connected,
+  the mod blocks the Steam achievement API. An AP run is a sandboxed save, and Steam achievements
+  are account-global and can't be un-earned, so AP play leaves your real Steam progress alone.
 - **AP Mode** — plays offline with an **isolated save** so AP never touches your normal (cloud) save,
   and **auto-starts fresh per seed** (resumes the same seed). It's effectively a separate "AP version"
   of the game. Toggle it from the **F1 menu** (auto-restarts) or launch the bundled

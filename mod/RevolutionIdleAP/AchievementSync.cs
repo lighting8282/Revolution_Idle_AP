@@ -3,45 +3,59 @@ using System.Collections.Generic;
 
 namespace RevolutionIdleAP;
 
-// Marks achievements whose AP location is already checked on the server as unlocked in the game's own
-// data (so the in-game achievement panel reflects AP progress), WITHOUT calling UnlockAchievement —
-// i.e. no reward/bonus is granted. Game ids are queued from the network thread and applied on the
-// main thread (Plugin.Tick) against GameData.unlockedAch / achByte.
+// Tracks which achievements are already checked on the AP server so the in-game achievement panel
+// can show them as done.
+//
+// This is *presentation only* and deliberately keeps its own set instead of writing into the game's
+// data. It used to set GameData.unlockedAch / achByte, which looked harmless but was not:
+// GameData.TriggerMissingAchievementsAsync() reconciles unlockedAch against Steam and triggers
+// whatever Steam is missing, so marking AP checks pushed hundreds of real Steam achievements onto
+// the player's account. Steam achievements are account-global, are not covered by AP Mode's save
+// isolation, and cannot be undone from in-game.
+//
+// Rule for this file: never write game state. The panel is updated by AchievementDisplayPatches
+// reading IsApChecked(), and SteamAchievementGuard blocks the Steam path as a backstop.
 public static class AchievementSync
 {
-    private static readonly HashSet<int> _pending = new();
+    private static readonly HashSet<int> _checked = new();
     private static readonly object _lock = new();
 
     public static void QueueMark(int gameAchId)
     {
-        lock (_lock) { _pending.Add(gameAchId); }
-    }
-
-    public static void ApplyPending(GameData data)
-    {
-        int[] ids;
         lock (_lock)
         {
-            if (_pending.Count == 0) return;
-            ids = new int[_pending.Count];
-            _pending.CopyTo(ids);
-            _pending.Clear();
+            if (_checked.Add(gameAchId))
+                _dirty = true;
         }
+    }
 
+    private static bool _dirty;
+
+    // True if this game achievement id corresponds to an AP location that is already checked.
+    public static bool IsApChecked(int gameAchId)
+    {
+        lock (_lock) { return _checked.Contains(gameAchId); }
+    }
+
+    public static int Count
+    {
+        get { lock (_lock) { return _checked.Count; } }
+    }
+
+    // Called from Plugin.Tick. Nothing to apply to the save any more — just report progress once
+    // per batch so the log still shows what the panel is reflecting.
+    public static void ApplyPending(GameData data)
+    {
         try
         {
-            var list = data.unlockedAch;
-            var ab = data.achByte;
-            int marked = 0;
-            foreach (int id in ids)
+            int total;
+            lock (_lock)
             {
-                bool changed = false;
-                if (ab != null && id >= 0 && id < ab.Length && ab[id] != 1) { ab[id] = 1; changed = true; }
-                if (list != null && !list.Contains(id)) { list.Add(id); changed = true; }
-                if (changed) marked++;
+                if (!_dirty) return;
+                _dirty = false;
+                total = _checked.Count;
             }
-            if (marked > 0)
-                Plugin.Logger.LogInfo($"[AP] marked {marked} achievement(s) as completed in-game (from AP checks).");
+            Plugin.Logger.LogInfo($"[AP] {total} achievement(s) shown as completed in the panel (AP checks; game/Steam state untouched).");
         }
         catch (Exception e)
         {
