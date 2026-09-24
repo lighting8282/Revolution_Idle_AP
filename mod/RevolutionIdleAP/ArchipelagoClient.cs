@@ -24,7 +24,9 @@ public class ArchipelagoClient
     public const long GenIdBase = 30_000;
     public const int GenCount = 10;  // base generators (GameData.infinity.generators)
     public const long GenLevelIdBase = 40_000;
-    public const int GenMaxLevel = 100; // each generator levels 1..100
+    // Generators do NOT cap at 100 (a live save reports maxAmount = 1e64), so level checks are
+    // indexed milestones: milestone k = level k * GenLevelInterval. 100 milestones per generator.
+    public const int GenLevelMaxMilestones = 100;
     public const long AscIdBase = 50_000;
     public const int AscMaxMilestones = 200; // ascension-milestone locations: ids 50001..50200
     public const string GameName = "Revolution Idle";
@@ -39,8 +41,10 @@ public class ArchipelagoClient
     // From slot_data: multiplier on how fast the revolutions fill (1 = vanilla speed).
     public int RevolutionSpeedMultiplier { get; private set; } = 1;
 
-    // From slot_data: a generator-level check every N levels (0 = disabled).
-    public int GenLevelInterval { get; private set; } = 0;
+    // From slot_data: per-generator level milestones (count = 0 disables; milestone k = level
+    // k * GenLevelInterval).
+    public int GenLevelCount { get; private set; } = 0;
+    public int GenLevelInterval { get; private set; } = 25;
 
     // From slot_data: ascension-milestone checks (count milestones, one per interval total levels).
     public int AscCheckCount { get; private set; } = 0;
@@ -125,6 +129,8 @@ public class ArchipelagoClient
                 Goal = Convert.ToInt32(g);
             if (success.SlotData != null && success.SlotData.TryGetValue("revolution_speed_multiplier", out var rsm) && rsm != null)
                 RevolutionSpeedMultiplier = Convert.ToInt32(rsm);
+            if (success.SlotData != null && success.SlotData.TryGetValue("generator_level_count", out var glc) && glc != null)
+                GenLevelCount = Convert.ToInt32(glc);
             if (success.SlotData != null && success.SlotData.TryGetValue("generator_level_interval", out var gli) && gli != null)
                 GenLevelInterval = Convert.ToInt32(gli);
             if (success.SlotData != null && success.SlotData.TryGetValue("ascension_check_count", out var acc) && acc != null)
@@ -273,13 +279,13 @@ public class ArchipelagoClient
         catch (Exception e) { Plugin.Logger.LogError($"[AP] send generator {index} failed: {e.Message}"); }
     }
 
-    // Send a generator-level check (generator #index reached level `level`).
-    public void SendGeneratorLevel(int index, int level)
+    // Send a generator-level milestone check (generator #index reached milestone k).
+    public void SendGeneratorLevel(int index, int k)
     {
         var s = Sendable;
-        if (s == null || index < 0 || index >= GenCount || level < 1 || level > GenMaxLevel) return;
-        try { s.Locations.CompleteLocationChecks(GenLevelIdBase + index * GenMaxLevel + level); }
-        catch (Exception e) { Plugin.Logger.LogError($"[AP] send generator {index} level {level} failed: {e.Message}"); }
+        if (s == null || index < 0 || index >= GenCount || k < 1 || k > GenLevelMaxMilestones) return;
+        try { s.Locations.CompleteLocationChecks(GenLevelIdBase + index * GenLevelMaxMilestones + k); }
+        catch (Exception e) { Plugin.Logger.LogError($"[AP] send generator {index} milestone {k} failed: {e.Message}"); }
     }
 
     // Send an ascension-milestone check (the k-th milestone, k = 1..AscMaxMilestones).

@@ -12,6 +12,26 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.20.0] - 2026-09-24
+
+### Changed
+- **Generator level checks were built on a wrong model and mostly didn't work.** They assumed
+  generators cap at level 100; a live diagnostic shows `maxAmount = 1E+64`. Consequences: no check
+  could ever fire above level 100, `generator_level_interval` was capped at 100, and the mod cast
+  the level to `int` (overflow at high levels) before clamping it to 100.
+  - Level checks are now **indexed milestones**, the same shape the ascension milestones already
+    use, and for the same reason: AP needs a `location_name_to_id` that can't depend on the chosen
+    interval. Milestone k = level `k * generator_level_interval`.
+  - New **`generator_level_count`** option (0-100, default 0 = off) sets how many milestones each
+    generator gets. **`generator_level_interval`** is now the gap between them (1-100000,
+    default 25) and no longer the on/off switch.
+  - The mod compares levels as `double`, so high levels work and nothing overflows.
+  - **Breaking:** locations are renamed `Generator N Level <lvl>` -> `Generator N Level Milestone
+    <k>`. The id space is unchanged (40001-41000, 100 per generator), and the feature defaulted to
+    off, so existing seeds are unaffected unless they enabled it.
+  - Verified by generation: `generator_level_count: 8` + `interval: 5000` yields 80 milestone
+    locations with the expected names, and 1943 defined locations overall (unchanged).
+
 ## [0.19.0] - 2026-09-24
 
 ### Added

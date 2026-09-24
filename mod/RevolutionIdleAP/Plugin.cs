@@ -17,7 +17,7 @@ public class Plugin : BasePlugin
 {
     public const string Guid = "com.jontrnka.revolutionidle.ap";
     public const string Name = "Revolution Idle Archipelago";
-    public const string Version = "0.19.0";
+    public const string Version = "0.20.0";
 
     internal static ManualLogSource Logger = null!;
     public static ArchipelagoClient? Client;
@@ -26,7 +26,7 @@ public class Plugin : BasePlugin
     private static bool _freshChecked;
     private static bool _apModeWarned;
     private static readonly HashSet<int> _genSent = new();
-    private static readonly HashSet<long> _genLevelSent = new(); // key = genIndex * 1000 + level
+    private static readonly HashSet<long> _genLevelSent = new(); // key = genIndex * 1000 + milestone index
     private static readonly HashSet<int> _ascSent = new(); // ascension milestone indices already sent
 
     // AP Mode: run offline (cloud blocked) + isolated save so AP play never touches your normal
@@ -359,6 +359,7 @@ public class Plugin : BasePlugin
             {
                 int n = gens.Count;
                 int interval = Client.GenLevelInterval;
+                int levelCount = Client.GenLevelCount;
                 for (int i = 0; i < n && i < ArchipelagoClient.GenCount; i++)
                 {
                     var g = gens[i];
@@ -372,18 +373,23 @@ public class Plugin : BasePlugin
                         Logger.LogInfo($"[AP] generator {i + 1} owned -> check");
                     }
 
-                    // Level checks: a check at every `interval` levels (amount is the level, 1..100).
-                    if (interval > 0)
+                    // Level milestones: milestone k fires at level k * interval. Compared in double
+                    // because generator levels run far past int range (maxAmount = 1e64) — the old
+                    // code cast the level to int and clamped it to 100, so nothing above level 100
+                    // ever fired and the cast would have overflowed anyway.
+                    if (interval > 0 && levelCount > 0)
                     {
-                        int lvl = (int)System.Math.Floor(g.amount);
-                        if (lvl > ArchipelagoClient.GenMaxLevel) lvl = ArchipelagoClient.GenMaxLevel;
-                        for (int m = interval; m <= lvl; m += interval)
+                        double lvl = g.amount;
+                        int maxK = levelCount < ArchipelagoClient.GenLevelMaxMilestones
+                                 ? levelCount : ArchipelagoClient.GenLevelMaxMilestones;
+                        for (int k = 1; k <= maxK; k++)
                         {
-                            long key = (long)i * 1000 + m;
+                            if (lvl < (double)k * interval) break;   // milestones are ascending
+                            long key = (long)i * 1000 + k;
                             if (_genLevelSent.Add(key))
                             {
-                                Client.SendGeneratorLevel(i, m);
-                                Logger.LogInfo($"[AP] generator {i + 1} reached level {m} -> check");
+                                Client.SendGeneratorLevel(i, k);
+                                Logger.LogInfo($"[AP] generator {i + 1} reached level {(long)k * interval} (milestone {k}) -> check");
                             }
                         }
                     }

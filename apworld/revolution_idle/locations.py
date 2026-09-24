@@ -25,10 +25,13 @@ SECRET_GAME_ID_BASE = 10_000
 GEN_COUNT = 10
 GEN_ID_BASE = 30_000
 
-# Per-generator level checks. Each generator levels from 1 to 100 as you buy it; the
-# generator_level_interval option turns levels N, 2N, ... into checks.
-GEN_MAX_LEVEL = 100
+# Per-generator level checks. Generators do NOT cap at level 100 — a live save reports
+# maxAmount = 1e64 — so milestones are indexed rather than keyed to an absolute level:
+# milestone k on a generator = that generator reaching level k * generator_level_interval.
+# (Same shape as the ascension milestones below, and for the same reason: AP needs a fixed
+# location_name_to_id that cannot depend on the chosen interval.)
 GEN_LEVEL_ID_BASE = 40_000
+GEN_LEVEL_MAX_MILESTONES = 100   # per generator; id space 40001..41000, same size as before
 
 # Ascension-milestone checks. Total ascension = sum of GameData.revolutions[i].ascension. A check is
 # awarded for every `ascension_check_interval` total levels, up to `ascension_check_count` of them.
@@ -42,20 +45,13 @@ def gen_location_name(index: int) -> str:
     return f"Generator {index + 1}"
 
 
-def gen_level_location_name(index: int, level: int) -> str:
-    return f"Generator {index + 1} Level {level}"
+def gen_level_location_name(index: int, k: int) -> str:
+    return f"Generator {index + 1} Level Milestone {k}"
 
 
-def gen_level_location_id(index: int, level: int) -> int:
-    # 40000 + gen*100 + level  -> stable, collision-free (gen 0 lvl 1 = 40001 .. gen 9 lvl 100 = 41000)
-    return GEN_LEVEL_ID_BASE + index * GEN_MAX_LEVEL + level
-
-
-def generator_level_milestones(interval: int) -> list[int]:
-    """Levels that become checks for a given interval (e.g. 25 -> [25, 50, 75, 100]). 0 = none."""
-    if interval <= 0:
-        return []
-    return list(range(interval, GEN_MAX_LEVEL + 1, interval))
+def gen_level_location_id(index: int, k: int) -> int:
+    # 40000 + gen*100 + k -> stable, collision-free (gen 0 k=1 = 40001 .. gen 9 k=100 = 41000)
+    return GEN_LEVEL_ID_BASE + index * GEN_LEVEL_MAX_MILESTONES + k
 
 
 def asc_milestone_location_name(k: int) -> str:
@@ -106,12 +102,12 @@ LOCATION_NAME_TO_ID.update({
 LOCATION_NAME_TO_ID.update({
     gen_location_name(i): GEN_ID_BASE + i for i in range(GEN_COUNT)
 })
-# Every possible generator-level location (1..100 per generator); only the ones matching the chosen
-# interval are created per seed, but the full id map must be stable.
+# Every possible generator-level milestone (by index); only `generator_level_count` are created
+# per seed, but the full id map must be stable.
 LOCATION_NAME_TO_ID.update({
-    gen_level_location_name(i, lvl): gen_level_location_id(i, lvl)
+    gen_level_location_name(i, k): gen_level_location_id(i, k)
     for i in range(GEN_COUNT)
-    for lvl in range(1, GEN_MAX_LEVEL + 1)
+    for k in range(1, GEN_LEVEL_MAX_MILESTONES + 1)
 })
 # Every possible ascension-milestone location (by index); only `ascension_check_count` are created
 # per seed, but the full id map must be stable.
@@ -168,12 +164,12 @@ def create_all_locations(world: RevolutionIdleWorld) -> None:
     world.get_region("Menu").add_locations(gen_names, RevolutionIdleLocation)
 
     # Generator-level checks: every N levels on each generator (base-tier grind -> Menu region).
-    milestones = generator_level_milestones(world.options.generator_level_interval.value)
-    if milestones:
+    gen_milestones = min(world.options.generator_level_count.value, GEN_LEVEL_MAX_MILESTONES)
+    if gen_milestones > 0 and world.options.generator_level_interval.value > 0:
         gen_level_names = {
-            gen_level_location_name(i, lvl): gen_level_location_id(i, lvl)
+            gen_level_location_name(i, k): gen_level_location_id(i, k)
             for i in range(GEN_COUNT)
-            for lvl in milestones
+            for k in range(1, gen_milestones + 1)
         }
         world.get_region("Menu").add_locations(gen_level_names, RevolutionIdleLocation)
 

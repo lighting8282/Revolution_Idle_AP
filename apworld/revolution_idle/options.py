@@ -197,19 +197,35 @@ class RevolutionSpeedMultiplier(Range):
     default = 10
 
 
-class GeneratorLevelInterval(Range):
+class GeneratorLevelCount(Range):
     """
-    Add a location check every N levels on each of the 10 base generators (each generator levels up
-    as you buy it, from 1 to 100).
+    How many level milestones each of the 10 base generators gets as checks (0 disables them).
 
-    0 disables generator-level checks. Otherwise you get a check at level N, 2N, 3N ... up to 100 on
-    every generator. Example: 25 -> checks at 25/50/75/100 (4 per generator, 40 total); 10 -> 100 total.
+    Milestone k fires when that generator reaches level k * generator_level_interval. Generators do
+    not stop at level 100 — they go far higher — so the number of milestones is set here rather than
+    being implied by a level cap.
+
+    Total locations = this x 10. Example: 4 with an interval of 25 -> checks at levels 25/50/75/100
+    on every generator (40 locations).
     """
 
-    display_name = "Generator Level Interval"
+    display_name = "Generator Level Milestones"
     range_start = 0
     range_end = 100
     default = 0
+
+
+class GeneratorLevelInterval(Range):
+    """
+    Levels between generator level milestones (see generator_level_count).
+
+    Milestone k = level k * this. Only used when generator_level_count is above 0.
+    """
+
+    display_name = "Generator Level Interval"
+    range_start = 1
+    range_end = 100_000
+    default = 25
 
 
 class ProgressiveLayers(Toggle):
@@ -305,6 +321,7 @@ class RevolutionIdleOptions(PerGameCommonOptions):
     ascension_check_interval: AscensionCheckInterval
     ascension_checks_progression: AscensionChecksProgression
     revolution_speed_multiplier: RevolutionSpeedMultiplier
+    generator_level_count: GeneratorLevelCount
     generator_level_interval: GeneratorLevelInterval
     progressive_layers: ProgressiveLayers
     trap_chance: TrapChance
@@ -331,6 +348,6 @@ option_groups = [
     OptionGroup("Ascension Checks", [
         AscensionCheckCount, AscensionCheckInterval, AscensionChecksProgression,
     ]),
-    OptionGroup("Generator Checks", [GeneratorLevelInterval]),
+    OptionGroup("Generator Checks", [GeneratorLevelCount, GeneratorLevelInterval]),
     OptionGroup("Game Speed", [RevolutionSpeedMultiplier]),
 ]

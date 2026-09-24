@@ -91,8 +91,9 @@ More detail (troubleshooting, updating, uninstalling) is in the `README.md` insi
   deeper than your chosen goal are automatically skipped, so a shallow goal like `infinity` stays a
   short run instead of silently requiring Eternity/Unity to fill your own achievement checks.
 - Optional **58 secret achievements** (`secret_achievements`).
-- **10 generator** checks (own each base generator), plus optional **per-level** checks every N
-  levels on each generator (`generator_level_interval`).
+- **10 generator** checks (own each base generator), plus optional **level-milestone** checks —
+  `generator_level_count` milestones per generator, one every `generator_level_interval` levels
+  (generators level well past 100, so the milestone count is set explicitly rather than capped).
 - Optional **ascension-milestone** checks — one per `ascension_check_interval` total ascension
   levels, up to `ascension_check_count` of them. Filler-only by default
   (`ascension_checks_progression` lets them hold progression).
@@ -168,7 +169,8 @@ Revolution Idle:
   secret_achievements: false  # add the 58 secret achievements
   ascension_check_count: 0    # 0 = off; else a check every `ascension_check_interval` total ascension levels
   ascension_check_interval: 500
-  generator_level_interval: 0 # 0 = off; else a check every N levels on each of the 10 generators
+  generator_level_count: 0    # 0 = off; else N level milestones per generator (x10 locations)
+  generator_level_interval: 25 # levels between those milestones
   progressive_layers: false
   revolution_speed_multiplier: 10  # 10x revolution fill speed; 1 = vanilla pacing
   trap_chance: 10             # 0-100; when a trap rolls, its type is random
