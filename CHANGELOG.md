@@ -12,6 +12,15 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.20.2] - 2026-09-24
+
+### Fixed
+- **The F1 menu clipped the "AP Mode is required" warning**, cutting off its last line ("Use the
+  switch above first") and the bottom of the panel. The warning was given a fixed `4 * lineHeight`
+  allowance and the panel a hardcoded height, neither of which matches how the text actually wraps.
+  Both warnings and the status line are now measured with `GUIStyle.CalcHeight` and the panel height
+  is derived from the same increments the layout walks, so the box always fits its contents.
+
 ## [0.20.1] - 2026-09-24
 
 ### Added

@@ -58,6 +58,12 @@ public class RevApTicker : MonoBehaviour
     private const double RevealSeconds = 10.0;  // after F2-on, show recent history even if expired
     private DateTime _revealUntil = DateTime.MinValue;
 
+    // Kept as constants so the height measured is exactly the text drawn.
+    private const string ApModeWarning =
+        "AP Mode is required before connecting.\n\nConnecting from your normal save would send its "
+        + "existing progress to the multiworld as checks. Use the switch above first.";
+    private const string NotVerifiedWarning = "Save not verified — nothing is being sent (see log).";
+
     public void OnGUI()
     {
         if (Plugin.ShowFeed)
@@ -71,9 +77,29 @@ public class RevApTicker : MonoBehaviour
         const float x = 24f, top = 24f, w = 360f, pad = 10f, fh = 24f, lh = 18f, gap = 6f;
         bool allowed = Plugin.ApModeOk;  // pre-connect: only the mode half is knowable here
         bool holdingSend = Plugin.Client?.Connected == true && Plugin.VerifySaveIdentity && !Plugin.SaveVerified;
-        GUI.Box(new Rect(x, top, w, (allowed ? 372f : 436f) + (holdingSend ? 36f : 0f)), "Archipelago Connection");
 
-        float ix = x + pad, iw = w - pad * 2f, y = top + 30f;
+        float ix = x + pad, iw = w - pad * 2f;
+        _warnStyle ??= new GUIStyle(GUI.skin.label) { wordWrap = true, fontStyle = FontStyle.Bold };
+
+        // Measure the wrapped warnings rather than guessing a line count: these strings wrap to
+        // different heights depending on width and font, and a fixed allowance silently clips the
+        // last line (and the box) right where the reader most needs it.
+        float warnH = allowed ? 0f : _warnStyle.CalcHeight(new GUIContent(ApModeWarning), iw);
+        float holdH = holdingSend ? _warnStyle.CalcHeight(new GUIContent(NotVerifiedWarning), iw) : 0f;
+        string statusText = "Status: " + (Plugin.Client?.Status ?? "-");
+        float statusH = _warnStyle.CalcHeight(new GUIContent(statusText), iw);
+
+        // Same increments the layout below walks through, so the box always fits its contents.
+        float boxH = 30f                                        // title bar
+                   + (lh + gap)                                 // hotkey hint
+                   + lh + fh + gap + 2f                         // AP Mode label + toggle button
+                   + 4f * lh + 3f * (fh + gap) + (fh + 8f)      // 4 field labels + 4 fields
+                   + (allowed ? fh + 12f : warnH + gap)         // Connect button OR the warning
+                   + (holdingSend ? holdH + 4f : 0f)
+                   + statusH + pad;
+        GUI.Box(new Rect(x, top, w, boxH), "Archipelago Connection");
+
+        float y = top + 30f;
 
         GUI.Label(new Rect(ix, y, iw, lh), "F1: this menu   F2: message feed"); y += lh + gap;
 
@@ -101,15 +127,11 @@ public class RevApTicker : MonoBehaviour
         // Connect button is withheld until AP Mode is on rather than failing after the fact.
         if (!allowed)
         {
-            _warnStyle ??= new GUIStyle(GUI.skin.label) { wordWrap = true, fontStyle = FontStyle.Bold };
             var prev = GUI.color;
             GUI.color = new Color(1f, 0.55f, 0.55f);
-            GUI.Label(new Rect(ix, y, iw, lh * 4f),
-                "AP Mode is required before connecting.\n\nConnecting from your normal save would send "
-                + "its existing progress to the multiworld as checks. Use the switch above first.",
-                _warnStyle);
+            GUI.Label(new Rect(ix, y, iw, warnH), ApModeWarning, _warnStyle);
             GUI.color = prev;
-            y += lh * 4f + gap;
+            y += warnH + gap;
         }
         else
         {
@@ -123,15 +145,14 @@ public class RevApTicker : MonoBehaviour
         // seed's AP save, so nothing is going out. Silent refusal would look like a dead connection.
         if (holdingSend)
         {
-            _warnStyle ??= new GUIStyle(GUI.skin.label) { wordWrap = true, fontStyle = FontStyle.Bold };
             var prev = GUI.color;
             GUI.color = new Color(1f, 0.8f, 0.4f);
-            GUI.Label(new Rect(ix, y, iw, lh * 2f), "Save not verified — nothing is being sent (see log).", _warnStyle);
+            GUI.Label(new Rect(ix, y, iw, holdH), NotVerifiedWarning, _warnStyle);
             GUI.color = prev;
-            y += lh * 2f;
+            y += holdH + 4f;
         }
 
-        GUI.Label(new Rect(ix, y, iw, lh * 2f), "Status: " + (Plugin.Client?.Status ?? "-"));
+        GUI.Label(new Rect(ix, y, iw, statusH), statusText);
     }
 
     // Top-right feed of recent AP messages (checks given/received, joins, hints, chat...). Each line
