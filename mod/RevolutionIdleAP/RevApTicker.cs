@@ -41,7 +41,8 @@ public class RevApTicker : MonoBehaviour
         catch (Exception e) { Plugin.Logger.LogError("[AP] tick error: " + e.Message); }
     }
 
-    private GUIStyle _feedStyle;
+    private GUIStyle? _feedStyle;
+    private GUIStyle? _warnStyle;
     private const float FeedSeconds = 12f;  // how long each message stays on screen
     private const int FeedMaxLines = 10;
 
@@ -56,7 +57,8 @@ public class RevApTicker : MonoBehaviour
         if (!Plugin.ShowMenu) return;
 
         const float x = 24f, top = 24f, w = 360f, pad = 10f, fh = 24f, lh = 18f, gap = 6f;
-        GUI.Box(new Rect(x, top, w, 372f), "Archipelago Connection");
+        bool allowed = Plugin.ApPlayAllowed;
+        GUI.Box(new Rect(x, top, w, allowed ? 372f : 436f), "Archipelago Connection");
 
         float ix = x + pad, iw = w - pad * 2f, y = top + 30f;
 
@@ -82,10 +84,27 @@ public class RevApTicker : MonoBehaviour
         GUI.Label(new Rect(ix, y, iw, lh), "Password (optional):"); y += lh;
         Plugin.MenuPass = GUI.PasswordField(new Rect(ix, y, iw, fh), Plugin.MenuPass, '*'); y += fh + 8f;
 
-        bool connected = Plugin.Client != null && Plugin.Client.Connected;
-        if (GUI.Button(new Rect(ix, y, iw, fh + 4f), connected ? "Reconnect" : "Connect"))
-            Plugin.ConnectFromMenu();
-        y += fh + 12f;
+        // Connecting from a normal save would send that save's progress into the multiworld, so the
+        // Connect button is withheld until AP Mode is on rather than failing after the fact.
+        if (!allowed)
+        {
+            _warnStyle ??= new GUIStyle(GUI.skin.label) { wordWrap = true, fontStyle = FontStyle.Bold };
+            var prev = GUI.color;
+            GUI.color = new Color(1f, 0.55f, 0.55f);
+            GUI.Label(new Rect(ix, y, iw, lh * 4f),
+                "AP Mode is required before connecting.\n\nConnecting from your normal save would send "
+                + "its existing progress to the multiworld as checks. Use the switch above first.",
+                _warnStyle);
+            GUI.color = prev;
+            y += lh * 4f + gap;
+        }
+        else
+        {
+            bool connected = Plugin.Client != null && Plugin.Client.Connected;
+            if (GUI.Button(new Rect(ix, y, iw, fh + 4f), connected ? "Reconnect" : "Connect"))
+                Plugin.ConnectFromMenu();
+            y += fh + 12f;
+        }
 
         GUI.Label(new Rect(ix, y, iw, lh * 2f), "Status: " + (Plugin.Client?.Status ?? "-"));
     }

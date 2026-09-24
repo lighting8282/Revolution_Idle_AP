@@ -67,11 +67,14 @@ minutes** before the game window appears. Later launches are normal speed.
 
 ### 4. Connect
 
-In-game, press **F1**, enter the server address, port, slot name, and password (if any), and hit
-Connect. Your values are remembered for next time.
+AP play happens in **AP Mode**: an isolated save that never touches your normal cloud save and
+starts fresh for each new seed. **AP Mode is required to connect** — the F1 menu won't offer a
+Connect button until it's on, because connecting from your normal save would send that save's
+existing progress into the multiworld as checks.
 
-The mod plays in **AP Mode**: an isolated save that never touches your normal cloud save and starts
-fresh for each new seed. See [Features](#features) for details.
+So: press **F1**, switch to **AP Mode** (the game restarts), then enter the server address, port,
+slot name, and password (if any) and hit Connect. Your values are remembered for next time.
+See [Features](#features) for details.
 
 More detail (troubleshooting, updating, uninstalling) is in the `README.md` inside the zip.
 
@@ -119,6 +122,9 @@ More detail (troubleshooting, updating, uninstalling) is in the `README.md` insi
 - **Steam achievements are blocked during AP play** — while AP Mode is on or a server is connected,
   the mod blocks the Steam achievement API. An AP run is a sandboxed save, and Steam achievements
   are account-global and can't be un-earned, so AP play leaves your real Steam progress alone.
+- **AP Mode is required to connect** — the mod refuses to open a session (and skips auto-connect)
+  unless AP Mode is on, so a normal save can never have its progress sent to a multiworld. If AP
+  Mode is turned off mid-session, all AP activity suspends.
 - **AP Mode** — plays offline with an **isolated save** so AP never touches your normal (cloud) save,
   and **auto-starts fresh per seed** (resumes the same seed). It's effectively a separate "AP version"
   of the game. Toggle it from the **F1 menu** (auto-restarts) or launch the bundled

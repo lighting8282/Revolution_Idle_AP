@@ -12,6 +12,27 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.17.2] - 2026-09-24
+
+### Fixed
+- **Critical: the mod would connect to a multiworld from your normal save.** AP Mode was a
+  convenience toggle rather than a precondition, so connecting (or auto-connecting on launch) while
+  playing normally immediately resynced that save's existing achievements as location checks —
+  releasing other players' items for progress never made in the seed, and potentially making the
+  seed unwinnable. AP Mode is now **required** to connect, enforced in three independent layers:
+  1. `Plugin.ConnectFromMenu` refuses to open a session, and launch auto-connect is skipped.
+  2. `Plugin.Tick` suspends all AP activity (no save scanning, no checks, no goal) if AP Mode is
+     off while somehow connected.
+  3. `ArchipelagoClient` routes every outbound check and the goal through a single `Sendable`
+     accessor that is null unless AP Mode is on — this also covers the `UnlockAchievement` Harmony
+     hook, which fires on the game's own unlocks during normal play.
+- The F1 menu now withholds the Connect button entirely when AP Mode is off and explains why,
+  instead of letting the attempt fail after the fact.
+
+### Added
+- `[AP Mode] Required To Connect` config (default on). Turning it off restores the old, unsafe
+  behaviour; it exists for mod development only.
+
 ## [0.17.1] - 2026-09-23
 
 ### Fixed

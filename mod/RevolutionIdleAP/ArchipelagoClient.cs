@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -70,6 +70,12 @@ public class ArchipelagoClient
     public string Status { get; private set; } = "Not connected";
 
     public void SetStatus(string s) => Status = s;
+
+    // Every outbound location check / goal goes through this; null means "don't send". AP Mode is
+    // part of the condition on purpose: the achievement Harmony hook fires on the game's own
+    // unlocks, so during normal play it would otherwise turn your real save's progress into
+    // multiworld checks.
+    private ArchipelagoSession? Sendable => (Connected && Plugin.ApPlayAllowed) ? _session : null;
 
     public void ConnectAsync(string host, int port, string slot, string password)
     {
@@ -252,48 +258,49 @@ public class ArchipelagoClient
     // Send one achievement (game id) as an AP location check.
     public void SendAchievement(int gameAchId)
     {
-        if (!Connected || _session == null) return;
-        if (!IsAchId(gameAchId)) return;
-        try { _session.Locations.CompleteLocationChecks(AchIdBase + gameAchId); }
+        var s = Sendable;
+        if (s == null || !IsAchId(gameAchId)) return;
+        try { s.Locations.CompleteLocationChecks(AchIdBase + gameAchId); }
         catch (Exception e) { Plugin.Logger.LogError($"[AP] send location {gameAchId} failed: {e.Message}"); }
     }
 
     // Send a generator check (own generator #index).
     public void SendGenerator(int index)
     {
-        if (!Connected || _session == null) return;
-        if (index < 0 || index >= GenCount) return;
-        try { _session.Locations.CompleteLocationChecks(GenIdBase + index); }
+        var s = Sendable;
+        if (s == null || index < 0 || index >= GenCount) return;
+        try { s.Locations.CompleteLocationChecks(GenIdBase + index); }
         catch (Exception e) { Plugin.Logger.LogError($"[AP] send generator {index} failed: {e.Message}"); }
     }
 
     // Send a generator-level check (generator #index reached level `level`).
     public void SendGeneratorLevel(int index, int level)
     {
-        if (!Connected || _session == null) return;
-        if (index < 0 || index >= GenCount || level < 1 || level > GenMaxLevel) return;
-        try { _session.Locations.CompleteLocationChecks(GenLevelIdBase + index * GenMaxLevel + level); }
+        var s = Sendable;
+        if (s == null || index < 0 || index >= GenCount || level < 1 || level > GenMaxLevel) return;
+        try { s.Locations.CompleteLocationChecks(GenLevelIdBase + index * GenMaxLevel + level); }
         catch (Exception e) { Plugin.Logger.LogError($"[AP] send generator {index} level {level} failed: {e.Message}"); }
     }
 
     // Send an ascension-milestone check (the k-th milestone, k = 1..AscMaxMilestones).
     public void SendAscensionMilestone(int k)
     {
-        if (!Connected || _session == null) return;
-        if (k < 1 || k > AscMaxMilestones) return;
-        try { _session.Locations.CompleteLocationChecks(AscIdBase + k); }
+        var s = Sendable;
+        if (s == null || k < 1 || k > AscMaxMilestones) return;
+        try { s.Locations.CompleteLocationChecks(AscIdBase + k); }
         catch (Exception e) { Plugin.Logger.LogError($"[AP] send ascension milestone {k} failed: {e.Message}"); }
     }
 
     // Resync: send every already-unlocked achievement id (called once after connecting).
     public void SendAchievements(IEnumerable<int> gameAchIds)
     {
-        if (!Connected || _session == null) return;
+        var s = Sendable;
+        if (s == null) return;
         long[] ids = gameAchIds.Where(IsAchId).Select(i => AchIdBase + i).ToArray();
         if (ids.Length == 0) return;
         try
         {
-            _session.Locations.CompleteLocationChecks(ids);
+            s.Locations.CompleteLocationChecks(ids);
             Plugin.Logger.LogInfo($"[AP] resynced {ids.Length} achievement location(s)");
         }
         catch (Exception e) { Plugin.Logger.LogError($"[AP] resync failed: {e.Message}"); }
@@ -301,9 +308,10 @@ public class ArchipelagoClient
 
     public void CompleteGoal()
     {
-        if (!Connected || _session == null || GoalSent) return;
+        var s = Sendable;
+        if (s == null || GoalSent) return;
         GoalSent = true;
-        _session.Socket.SendPacketAsync(new StatusUpdatePacket { Status = ArchipelagoClientState.ClientGoal });
+        s.Socket.SendPacketAsync(new StatusUpdatePacket { Status = ArchipelagoClientState.ClientGoal });
         Plugin.Logger.LogInfo("[AP] goal reached -> sent ClientGoal");
     }
 

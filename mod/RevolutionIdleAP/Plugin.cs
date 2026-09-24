@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using BepInEx;
 using BepInEx.Configuration;
@@ -17,13 +17,14 @@ public class Plugin : BasePlugin
 {
     public const string Guid = "com.jontrnka.revolutionidle.ap";
     public const string Name = "Revolution Idle Archipelago";
-    public const string Version = "0.17.1";
+    public const string Version = "0.17.2";
 
     internal static ManualLogSource Logger = null!;
     public static ArchipelagoClient? Client;
     private static bool _resynced;
     private static bool _seedChecked;
     private static bool _freshChecked;
+    private static bool _apModeWarned;
     private static readonly HashSet<int> _genSent = new();
     private static readonly HashSet<long> _genLevelSent = new(); // key = genIndex * 1000 + level
     private static readonly HashSet<int> _ascSent = new(); // ascension milestone indices already sent
@@ -37,6 +38,17 @@ public class Plugin : BasePlugin
     // achievements are account-global, so AP Mode's save isolation does not cover them, and they
     // can't be un-earned. See SteamAchievementGuard.
     public static bool AllowSteamAchievementBlock = true;
+
+    // Safety: AP play is only allowed from AP Mode's isolated save. Connecting from a normal save
+    // would send that save's existing progress into the multiworld as location checks — releasing
+    // other players' items from a run that never happened, and silently un-winnable-ing the seed.
+    // Nothing AP-related sends, receives, or connects unless this is true.
+    public static bool RequireApMode = true;
+    public static bool ApPlayAllowed => !RequireApMode || APMode;
+
+    public const string ApModeRequiredMessage =
+        "AP Mode is required. Switch to AP Mode (below) before connecting — "
+        + "connecting from your normal save would send its progress to the multiworld.";
 
     // In-game message feed overlay (toggled with F2).
     public static bool ShowFeed = true;
@@ -85,6 +97,10 @@ public class Plugin : BasePlugin
             "Block the Steam achievement API while AP Mode is on or an AP server is connected. Leave this ON. "
             + "An AP run is a sandboxed save, so it should not award real Steam achievements — and Steam "
             + "achievements cannot be un-earned once granted.").Value;
+        RequireApMode = Config.Bind("AP Mode", "Required To Connect", true,
+            "Refuse to connect to an Archipelago server unless AP Mode is on. Leave this ON. Connecting "
+            + "from your normal save sends that save's existing progress to the multiworld as location "
+            + "checks, which releases other players' items for progress you didn't make in the seed.").Value;
 
         var harmony = new Harmony(Guid);
         harmony.PatchAll(typeof(SteamAchievementGuard.SetAchievementPatch));
@@ -107,7 +123,12 @@ public class Plugin : BasePlugin
         go.AddComponent<RevApTicker>();
 
         Client = new ArchipelagoClient();
-        if (enabled) ConnectFromMenu();
+        if (!ApPlayAllowed)
+        {
+            Client.SetStatus("AP Mode required — not connected");
+            Logger.LogWarning("[AP] not in AP Mode: auto-connect skipped. " + ApModeRequiredMessage);
+        }
+        else if (enabled) ConnectFromMenu();
         else Logger.LogInfo("[AP] auto-connect disabled; use the F1 menu to connect.");
 
         Logger.LogInfo("Revolution Idle AP loaded. Press F1 in-game for the connection menu.");
@@ -117,6 +138,15 @@ public class Plugin : BasePlugin
     public static void ConnectFromMenu()
     {
         if (Client == null) return;
+
+        // Layer 1: never open a session from a normal save.
+        if (!ApPlayAllowed)
+        {
+            Client.SetStatus("Refused: AP Mode is required");
+            Logger.LogWarning("[AP] connect refused — " + ApModeRequiredMessage);
+            return;
+        }
+
         if (!int.TryParse(MenuPort.Trim(), out int port))
         {
             Client.SetStatus("Invalid port: " + MenuPort);
@@ -173,6 +203,19 @@ public class Plugin : BasePlugin
     public static void Tick()
     {
         if (Client == null || !Client.Connected) return;
+
+        // Layer 2: if AP Mode got turned off while connected, stop driving the game entirely —
+        // no scanning the save, no checks, no goal. (Layer 1 blocks connecting; layer 3 blocks the
+        // individual sends.) Belt and braces: this is a normal save and must be left alone.
+        if (!ApPlayAllowed)
+        {
+            if (!_apModeWarned)
+            {
+                _apModeWarned = true;
+                Logger.LogWarning("[AP] connected but NOT in AP Mode — all AP activity suspended. " + ApModeRequiredMessage);
+            }
+            return;
+        }
 
         var data = GameController.data;
         if (data == null) return;
