@@ -72,9 +72,13 @@ starts fresh for each new seed. **AP Mode is required to connect** — the F1 me
 Connect button until it's on, because connecting from your normal save would send that save's
 existing progress into the multiworld as checks.
 
-So: press **F1**, switch to **AP Mode** (the game restarts), then enter the server address, port,
-slot name, and password (if any) and hit Connect. Your values are remembered for next time.
-See [Features](#features) for details.
+Launch with the **`Play Revolution Idle (AP)`** shortcut in your game folder. AP Mode is decided by
+how you launch (that shortcut passes `--archipelago`), so launching any other way — including
+straight from Steam — is ordinary play with your normal save. To launch in AP Mode from Steam
+instead, put `--archipelago` in the game's launch options.
+
+Then press **F1**, enter the server address, port, slot name, and password (if any), and hit
+Connect. Your values are remembered for next time. See [Features](#features) for details.
 
 More detail (troubleshooting, updating, uninstalling) is in the `README.md` inside the zip.
 
@@ -125,6 +129,11 @@ More detail (troubleshooting, updating, uninstalling) is in the `README.md` insi
 - **AP Mode is required to connect** — the mod refuses to open a session (and skips auto-connect)
   unless AP Mode is on, so a normal save can never have its progress sent to a multiworld. If AP
   Mode is turned off mid-session, all AP activity suspends.
+- **Save-identity verification** — before anything is sent, the mod checks the loaded *save*, not
+  just the mode: save isolation must be observed working, and the save must match the one stamped
+  when this seed's run started. It fails closed, so a save that can't be verified sends nothing.
+- **AP Mode comes from the launch** (`--archipelago`, via the AP shortcut) rather than a saved
+  setting, so it can't quietly disagree with how the game was actually started.
 - **AP Mode** — plays offline with an **isolated save** so AP never touches your normal (cloud) save,
   and **auto-starts fresh per seed** (resumes the same seed). It's effectively a separate "AP version"
   of the game. Toggle it from the **F1 menu** (auto-restarts) or launch the bundled

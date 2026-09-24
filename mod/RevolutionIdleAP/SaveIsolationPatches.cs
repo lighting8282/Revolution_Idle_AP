@@ -16,10 +16,19 @@ public static class SaveIsolationPatches
         ["inventory"] = "inventory_ap",
     };
 
+    // How many save-key reads/writes were actually redirected. ApSaveGuard uses this as proof that
+    // isolation is really in effect, rather than trusting that Plugin.APMode implies it: if these
+    // patches ever failed to apply, APMode would still be true while the game loaded the NORMAL
+    // save, and every mode-based check would happily pass.
+    public static int RemapCount { get; private set; }
+
     private static void RemapKey(ref string key)
     {
         if (Plugin.APMode && key != null && KeyMap.TryGetValue(key, out var mapped))
+        {
             key = mapped;
+            RemapCount++;
+        }
     }
 
     [HarmonyPatch(typeof(PlayerPrefs), nameof(PlayerPrefs.SetString))]

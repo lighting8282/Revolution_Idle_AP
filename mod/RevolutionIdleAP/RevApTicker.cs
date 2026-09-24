@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace RevolutionIdleAP;
@@ -57,8 +57,9 @@ public class RevApTicker : MonoBehaviour
         if (!Plugin.ShowMenu) return;
 
         const float x = 24f, top = 24f, w = 360f, pad = 10f, fh = 24f, lh = 18f, gap = 6f;
-        bool allowed = Plugin.ApPlayAllowed;
-        GUI.Box(new Rect(x, top, w, allowed ? 372f : 436f), "Archipelago Connection");
+        bool allowed = Plugin.ApModeOk;  // pre-connect: only the mode half is knowable here
+        bool holdingSend = Plugin.Client?.Connected == true && Plugin.VerifySaveIdentity && !Plugin.SaveVerified;
+        GUI.Box(new Rect(x, top, w, (allowed ? 372f : 436f) + (holdingSend ? 36f : 0f)), "Archipelago Connection");
 
         float ix = x + pad, iw = w - pad * 2f, y = top + 30f;
 
@@ -104,6 +105,18 @@ public class RevApTicker : MonoBehaviour
             if (GUI.Button(new Rect(ix, y, iw, fh + 4f), connected ? "Reconnect" : "Connect"))
                 Plugin.ConnectFromMenu();
             y += fh + 12f;
+        }
+
+        // Surface a held-back send: connected but the loaded save hasn't been verified as this
+        // seed's AP save, so nothing is going out. Silent refusal would look like a dead connection.
+        if (holdingSend)
+        {
+            _warnStyle ??= new GUIStyle(GUI.skin.label) { wordWrap = true, fontStyle = FontStyle.Bold };
+            var prev = GUI.color;
+            GUI.color = new Color(1f, 0.8f, 0.4f);
+            GUI.Label(new Rect(ix, y, iw, lh * 2f), "Save not verified — nothing is being sent (see log).", _warnStyle);
+            GUI.color = prev;
+            y += lh * 2f;
         }
 
         GUI.Label(new Rect(ix, y, iw, lh * 2f), "Status: " + (Plugin.Client?.Status ?? "-"));

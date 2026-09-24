@@ -12,6 +12,33 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.18.0] - 2026-09-24
+
+### Changed
+- **AP Mode is now decided by how you launch the game, not by sticky config state.** The
+  "Play Revolution Idle (AP)" shortcut passes `--archipelago`; anything else (including launching
+  from Steam) is normal play. Config state could silently disagree with reality — that is exactly
+  how 0.17.2's incident happened, with the config reading AP Mode while the normal save was loaded.
+  A launch argument can't drift.
+  - `[AP Mode] Enabled` remains as an advanced fallback for installs without the launcher, now
+    defaulting to false and documented as sticky. `launch.ps1` force-clears it so an old config can
+    never contradict the argument.
+  - The in-game AP Mode toggle relaunches with/without the flag, and clears the stale override when
+    switching to Normal.
+  - To launch in AP Mode from Steam, put `--archipelago` in the game's launch options.
+
+### Added
+- **Save-identity verification (`ApSaveGuard`)** — a fourth guard, and the only one that inspects
+  the loaded *save* rather than the mode the mod believes it's in. Before anything is sent:
+  1. Save isolation must be **observed** working (`SaveIsolationPatches` actually redirected a save
+     key), not merely inferred from AP Mode being on.
+  2. The save's identity (`playerId` + `saveId`) must match the identity stamped when this seed's
+     fresh AP run was created, kept in `revolutionidle_ap_savestamps.txt`.
+  Fails closed, and the reason is logged once per change. Toggle:
+  `[AP Mode] Verify Save Identity` (default on).
+- The F1 menu shows "Save not verified — nothing is being sent" when connected but held back, so a
+  refusal doesn't look like a dead connection.
+
 ## [0.17.3] - 2026-09-24
 
 ### Fixed

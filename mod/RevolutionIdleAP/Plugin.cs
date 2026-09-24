@@ -17,7 +17,7 @@ public class Plugin : BasePlugin
 {
     public const string Guid = "com.jontrnka.revolutionidle.ap";
     public const string Name = "Revolution Idle Archipelago";
-    public const string Version = "0.17.3";
+    public const string Version = "0.18.0";
 
     internal static ManualLogSource Logger = null!;
     public static ArchipelagoClient? Client;
@@ -44,7 +44,32 @@ public class Plugin : BasePlugin
     // other players' items from a run that never happened, and silently un-winnable-ing the seed.
     // Nothing AP-related sends, receives, or connects unless this is true.
     public static bool RequireApMode = true;
-    public static bool ApPlayAllowed => !RequireApMode || APMode;
+
+    // Set once per tick by ApSaveGuard: the loaded save really is the isolated AP save for this
+    // seed. Mode alone is not enough — see ApSaveGuard for why.
+    public static bool SaveVerified;
+    public static bool VerifySaveIdentity = true;
+
+    // The mode half of the gate, checked on its own where the save-identity half can't be known yet.
+    public static bool ApModeOk => !RequireApMode || APMode;
+    public static bool ApPlayAllowed => ApModeOk && (!VerifySaveIdentity || SaveVerified);
+
+    // The launch argument that turns on AP Mode. The mode is a property of HOW the game was
+    // launched, not sticky state in a config file: config state can silently drift out of sync with
+    // reality (e.g. if BepInEx fails to load on a relaunch, the config says AP Mode but the normal
+    // save is what's actually loaded), and you can't tell which mode you're in until the game is up.
+    public const string ApLaunchFlag = "--archipelago";
+
+    private static bool HasApLaunchFlag()
+    {
+        try
+        {
+            foreach (string a in System.Environment.GetCommandLineArgs())
+                if (string.Equals(a, ApLaunchFlag, System.StringComparison.OrdinalIgnoreCase)) return true;
+        }
+        catch { }
+        return false;
+    }
 
     public const string ApModeRequiredMessage =
         "AP Mode is required. Switch to AP Mode (below) before connecting — "
@@ -90,9 +115,18 @@ public class Plugin : BasePlugin
             "Write BepInEx/revidle_diagnostic.txt once per launch with live game state (achievement tier "
             + "ranges, unlock flag indices, new game members). Used to re-verify the mod after a game update.").Value;
         _apModeEntry = Config.Bind("AP Mode", "Enabled", false,
-            "Run offline with an isolated save so AP play never touches your normal cloud save (and can start fresh per seed). Turn OFF for normal play.");
-        APMode = _apModeEntry.Value;
-        Logger.LogInfo($"[AP] AP Mode = {APMode}");
+            "ADVANCED FALLBACK — normally leave this false. AP Mode is chosen by launching with the "
+            + "'Play Revolution Idle (AP)' shortcut (which passes " + ApLaunchFlag + "), not by this setting. "
+            + "Set it true only for installs without the launcher; it is sticky, so it can disagree with "
+            + "how you actually launched.");
+        bool launchFlag = HasApLaunchFlag();
+        APMode = launchFlag || _apModeEntry.Value;
+        Logger.LogInfo($"[AP] AP Mode = {APMode} (launch flag: {launchFlag}, config override: {_apModeEntry.Value})");
+        VerifySaveIdentity = Config.Bind("AP Mode", "Verify Save Identity", true,
+            "Before sending anything, require that the loaded save really is the isolated AP save for this "
+            + "seed (save isolation observed active + the save's identity matches the one stamped when the "
+            + "run started). Leave this ON: it is the only check that looks at the save itself rather than "
+            + "at which mode the mod thinks it's in.").Value;
         AllowSteamAchievementBlock = Config.Bind("AP Mode", "Block Steam Achievements", true,
             "Block the Steam achievement API while AP Mode is on or an AP server is connected. Leave this ON. "
             + "An AP run is a sandboxed save, so it should not award real Steam achievements — and Steam "
@@ -123,7 +157,7 @@ public class Plugin : BasePlugin
         go.AddComponent<RevApTicker>();
 
         Client = new ArchipelagoClient();
-        if (!ApPlayAllowed)
+        if (!ApModeOk)
         {
             Client.SetStatus("AP Mode required — not connected");
             Logger.LogWarning("[AP] not in AP Mode: auto-connect skipped. " + ApModeRequiredMessage);
@@ -140,7 +174,7 @@ public class Plugin : BasePlugin
         if (Client == null) return;
 
         // Layer 1: never open a session from a normal save.
-        if (!ApPlayAllowed)
+        if (!ApModeOk)
         {
             Client.SetStatus("Refused: AP Mode is required");
             Logger.LogWarning("[AP] connect refused — " + ApModeRequiredMessage);
@@ -174,10 +208,13 @@ public class Plugin : BasePlugin
     // Flip AP Mode (persisted to config) and relaunch the game so the offline/save patches apply.
     public static void ToggleApModeAndRestart()
     {
-        if (_apModeEntry == null) return;
-        _apModeEntry.Value = !_apModeEntry.Value;   // BepInEx writes this to the .cfg immediately
-        Logger.LogInfo($"[AP] AP Mode -> {_apModeEntry.Value}; restarting game...");
-        RestartGame(_apModeEntry.Value);
+        bool target = !APMode;
+        // The launch flag decides the mode now, so clear the sticky config override when switching
+        // to Normal — otherwise it would put the relaunch straight back into AP Mode.
+        try { if (_apModeEntry != null && !target && _apModeEntry.Value) _apModeEntry.Value = false; }
+        catch (System.Exception e) { Logger.LogError("[AP] clearing AP Mode override failed: " + e.Message); }
+        Logger.LogInfo($"[AP] AP Mode -> {target}; restarting game...");
+        RestartGame(target);
     }
 
     // Relaunch this game executable after the current instance exits (avoids a two-instance overlap),
@@ -217,7 +254,8 @@ public class Plugin : BasePlugin
                 psi = new ProcessStartInfo
                 {
                     FileName = "cmd.exe",
-                    Arguments = $"/c timeout /t 2 /nobreak >nul & start \"\" /D \"{dir}\" \"{exe}\"",
+                    Arguments = $"/c timeout /t 2 /nobreak >nul & start \"\" /D \"{dir}\" \"{exe}\""
+                              + (apMode ? " " + ApLaunchFlag : ""),
                     WorkingDirectory = dir,
                     UseShellExecute = false,
                     CreateNoWindow = true,
@@ -239,8 +277,9 @@ public class Plugin : BasePlugin
         // Layer 2: if AP Mode got turned off while connected, stop driving the game entirely —
         // no scanning the save, no checks, no goal. (Layer 1 blocks connecting; layer 3 blocks the
         // individual sends.) Belt and braces: this is a normal save and must be left alone.
-        if (!ApPlayAllowed)
+        if (!ApModeOk)
         {
+            SaveVerified = false;
             if (!_apModeWarned)
             {
                 _apModeWarned = true;
@@ -261,6 +300,7 @@ public class Plugin : BasePlugin
             if (!FreshRuns.Contains(key))
             {
                 FreshRuns.Add(key);
+                ApSaveGuard.Forget(Client.Slot, Client.Seed);  // the new save gets stamped instead
                 Logger.LogInfo($"[AP] New seed '{Client.Seed}' — starting a fresh AP save (reloading).");
                 ObscuredPrefs.DeleteKey("game_data");   // remapped to game_data_ap in AP mode
                 ObscuredPrefs.DeleteKey("inventory");    // remapped to inventory_ap
@@ -269,6 +309,11 @@ public class Plugin : BasePlugin
             }
             Logger.LogInfo($"[AP] Resuming existing AP save for seed '{Client.Seed}'.");
         }
+
+        // Layer 4: the save itself must check out before anything is sent. This is the only guard
+        // that looks at the loaded save rather than at which mode the mod believes it's in.
+        ApSaveGuard.Verify(data);
+        if (!ApPlayAllowed) return;
 
         // Non-AP play: just warn if this save was used with a different seed (no auto-reset).
         if (!APMode && !_seedChecked)
