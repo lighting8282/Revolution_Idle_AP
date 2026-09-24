@@ -12,6 +12,22 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.20.1] - 2026-09-24
+
+### Added
+- **Goal diagnostics.** A goal that won't fire looked identical to a goal whose threshold never
+  arrived in `slot_data`, and the log printed only `goal=7`.
+  - The connect line now spells out the target, e.g.
+    `goal=7 (achievement_count: unlock >= 250 achievements in-game)`.
+  - The F3 diagnostic dump gained a **goal state** section: configured target, whether the goal was
+    already sent, and the live values it is compared against (`CountUnlockedAch`, score/pMult
+    exponents, `scoreEquality`).
+
+### Changed
+- Documented that `achievements_base` / `_infinity` / `_eternity` / `_unity` choose how many
+  achievements become **checks** and have no effect on the win condition, and that
+  `achievement_count_goal` is the goal target. The two are easy to confuse in the YAML.
+
 ## [0.20.0] - 2026-09-24
 
 ### Changed

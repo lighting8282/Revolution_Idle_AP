@@ -75,6 +75,20 @@ public class ArchipelagoClient
 
     public void SetStatus(string s) => Status = s;
 
+    // The goal's target, spelled out. Logged on connect because "goal=7" alone doesn't say what the
+    // threshold actually came through as, which is the first thing you need when a goal won't fire.
+    public string GoalDescription => Goal switch
+    {
+        1 => "equality: earn any Equality currency",
+        2 => "infinity: reach the Infinity layer",
+        3 => "eternity: reach the Eternity layer",
+        4 => $"ascension: total ascension >= {AscensionGoal}",
+        5 => $"score: score >= 1e{ScoreGoalExponent}",
+        6 => $"prestige_mult: pMult >= 1e{PrestigeMultGoalExponent}",
+        7 => $"achievement_count: unlock >= {AchievementCountGoal} achievements in-game",
+        _ => "unity: reach the Unity layer",
+    };
+
     // Every outbound location check / goal goes through this; null means "don't send". AP Mode is
     // part of the condition on purpose: the achievement Harmony hook fires on the game's own
     // unlocks, so during normal play it would otherwise turn your real save's progress into
@@ -159,7 +173,7 @@ public class ArchipelagoClient
                 IncomeJackpotSeconds = Convert.ToInt32(ijs);
             try { Seed = _session.RoomState?.Seed ?? ""; } catch { Seed = ""; }
             Status = $"Connected as {slot} (goal {Goal})";
-            Plugin.Logger.LogInfo($"[AP] connected. goal={Goal} seed={Seed}");
+            Plugin.Logger.LogInfo($"[AP] connected. goal={Goal} ({GoalDescription}) seed={Seed}");
             ApFeed.Add($"Connected as {slot} (goal {Goal})", new Color(0.45f, 0.9f, 0.45f));
 
             // Reflect already-checked achievement locations in the in-game achievement panel.

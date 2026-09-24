@@ -62,6 +62,10 @@ class PrestigeMultGoalExponent(Range):
 class AchievementCountGoal(Range):
     """For the `achievement_count` goal: how many achievements you must unlock in-game (1-675).
 
+    THIS is the goal target. Do not confuse it with achievements_base / achievements_infinity /
+    achievements_eternity / achievements_unity, which only choose how many achievements become AP
+    location checks and have no effect on when you win.
+
     This counts your real in-game achievement unlocks (independent of how many are AP checks). The
     win region is gated by the count: higher targets require the deeper prestige layers to reach.
     """
@@ -73,7 +77,9 @@ class AchievementCountGoal(Range):
 
 
 # The game splits its 675 achievements into tiers (Const.ACH_RANGES), each tied to a prestige layer.
-# Each option below picks how many achievements from that tier become checks (sampled deterministically).
+# Each option below picks how many achievements from that tier become CHECKS (sampled
+# deterministically). None of them affect the win condition — for the `achievement_count` goal's
+# target, see achievement_count_goal above.
 # Defaults are the full size of each tier, so out of the box you get all 675.
 #
 # The 1.077 update added 155 achievements, all of which went into the EXISTING Unity tier
@@ -81,7 +87,10 @@ class AchievementCountGoal(Range):
 
 
 class AchievementsBase(Range):
-    """How many Base / Prestige achievements (ids 0-29, reachable from the start) become checks."""
+    """How many Base / Prestige achievements (ids 0-29, reachable from the start) become checks.
+
+    Number of CHECKS only — this does not change the goal.
+    """
 
     display_name = "Base Achievements"
     range_start = 0
@@ -90,7 +99,10 @@ class AchievementsBase(Range):
 
 
 class AchievementsInfinity(Range):
-    """How many Infinity-tier achievements (ids 30-69, need the Infinity layer) become checks."""
+    """How many Infinity-tier achievements (ids 30-69, need the Infinity layer) become checks.
+
+    Number of CHECKS only — this does not change the goal.
+    """
 
     display_name = "Infinity Achievements"
     range_start = 0
@@ -99,7 +111,10 @@ class AchievementsInfinity(Range):
 
 
 class AchievementsEternity(Range):
-    """How many Eternity-tier achievements (ids 70-160, need the Eternity layer) become checks."""
+    """How many Eternity-tier achievements (ids 70-160, need the Eternity layer) become checks.
+
+    Number of CHECKS only — this does not change the goal.
+    """
 
     display_name = "Eternity Achievements"
     range_start = 0
@@ -108,7 +123,10 @@ class AchievementsEternity(Range):
 
 
 class AchievementsUnity(Range):
-    """How many Unity-tier achievements (ids 161-674, need the Unity layer) become checks."""
+    """How many Unity-tier achievements (ids 161-674, need the Unity layer) become checks.
+
+    Number of CHECKS only — this does not change the goal.
+    """
 
     display_name = "Unity Achievements"
     range_start = 0

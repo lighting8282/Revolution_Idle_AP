@@ -55,6 +55,7 @@ public static class DiagnosticDump
             W("================================================================");
             W("");
 
+            DumpGoalState(W, data);
             DumpAchRanges(W);
             DumpAchByte(W, data);
             DumpSingularity(W, data);
@@ -83,6 +84,31 @@ public static class DiagnosticDump
 
     // The new Singularity layer: its counter (the `singularity` goal candidate) and sub-systems,
     // now typed because BepInEx regenerated the interop for the updated game build.
+    // Why the goal has or hasn't fired: the configured target next to the live value it's compared
+    // against. Without this, a goal that won't trigger is indistinguishable from a goal whose
+    // threshold never arrived in slot_data.
+    private static void DumpGoalState(Action<string> W, GameData data)
+    {
+        W("--- goal state ---");
+        var c = Plugin.Client;
+        if (c == null || !c.Connected)
+        {
+            W("  not connected — goal config comes from slot_data, so it is unknown until then.");
+            W("");
+            return;
+        }
+
+        W($"  goal = {c.Goal}  ({c.GoalDescription})");
+        W($"  already sent? {c.GoalSent}");
+        try { W($"  live: CountUnlockedAch = {data.CountUnlockedAch}   (unlockedAch.Count = {data.unlockedAch?.Count ?? -1})"); }
+        catch (Exception e) { W("  live: CountUnlockedAch failed: " + e.Message); }
+        try { W($"  live: score exponent = {data.score.Exponent}   pMult exponent = {data.pMult.Exponent}"); }
+        catch (Exception e) { W("  live: score/pMult failed: " + e.Message); }
+        try { W($"  live: scoreEquality = {data.scoreEquality.ToDouble()}"); }
+        catch (Exception e) { W("  live: scoreEquality failed: " + e.Message); }
+        W("");
+    }
+
     private static void DumpSingularity(Action<string> W, GameData data)
     {
         W("--- Singularity (new layer) ---");
