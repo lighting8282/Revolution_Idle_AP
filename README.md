@@ -85,12 +85,12 @@ More detail (troubleshooting, updating, uninstalling) is in the `README.md` insi
 ## Features
 
 **Location checks**
-- Up to **520 achievement** checks, split into the game's own tiers — pick how many of each become
+- Up to **675 achievement** checks, split into the game's own tiers — pick how many of each become
   checks with `achievements_base` / `achievements_infinity` / `achievements_eternity` /
-  `achievements_unity` (defaults = the full 520). By default (`scale_achievements_to_goal`), tiers
+  `achievements_unity` (defaults = the full 675). By default (`scale_achievements_to_goal`), tiers
   deeper than your chosen goal are automatically skipped, so a shallow goal like `infinity` stays a
   short run instead of silently requiring Eternity/Unity to fill your own achievement checks.
-- Optional **55 secret achievements** (`secret_achievements`).
+- Optional **58 secret achievements** (`secret_achievements`).
 - **10 generator** checks (own each base generator), plus optional **per-level** checks every N
   levels on each generator (`generator_level_interval`).
 - Optional **ascension-milestone** checks — one per `ascension_check_interval` total ascension
@@ -160,12 +160,12 @@ requires:
   version: 0.6.7
 Revolution Idle:
   goal: unity                 # unity|equality|infinity|eternity|ascension|score|prestige_mult|achievement_count
-  # how many achievements per tier become checks (defaults shown = all 520)
+  # how many achievements per tier become checks (defaults shown = all 675)
   achievements_base: 30       # 0-30
   achievements_infinity: 40   # 0-40
   achievements_eternity: 91   # 0-91
-  achievements_unity: 359     # 0-359
-  secret_achievements: false  # add the 55 secret achievements
+  achievements_unity: 514     # 0-514
+  secret_achievements: false  # add the 58 secret achievements
   ascension_check_count: 0    # 0 = off; else a check every `ascension_check_interval` total ascension levels
   ascension_check_interval: 500
   generator_level_interval: 0 # 0 = off; else a check every N levels on each of the 10 generators

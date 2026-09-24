@@ -60,7 +60,7 @@ class PrestigeMultGoalExponent(Range):
 
 
 class AchievementCountGoal(Range):
-    """For the `achievement_count` goal: how many achievements you must unlock in-game (1-520).
+    """For the `achievement_count` goal: how many achievements you must unlock in-game (1-675).
 
     This counts your real in-game achievement unlocks (independent of how many are AP checks). The
     win region is gated by the count: higher targets require the deeper prestige layers to reach.
@@ -68,13 +68,16 @@ class AchievementCountGoal(Range):
 
     display_name = "Achievement Count Goal"
     range_start = 1
-    range_end = 520
+    range_end = 675
     default = 250
 
 
-# The game splits its 520 achievements into tiers (Const.ACH_RANGES), each tied to a prestige layer.
+# The game splits its 675 achievements into tiers (Const.ACH_RANGES), each tied to a prestige layer.
 # Each option below picks how many achievements from that tier become checks (sampled deterministically).
-# Defaults are the full size of each tier, so out of the box you get all 520 (same as before).
+# Defaults are the full size of each tier, so out of the box you get all 675.
+#
+# The 1.077 update added 155 achievements, all of which went into the EXISTING Unity tier
+# ([161, 675)); it did not add a new tier. Ids 0-160 are untouched, so ids stay stable.
 
 
 class AchievementsBase(Range):
@@ -105,17 +108,17 @@ class AchievementsEternity(Range):
 
 
 class AchievementsUnity(Range):
-    """How many Unity-tier achievements (ids 161-519, need the Unity layer) become checks."""
+    """How many Unity-tier achievements (ids 161-674, need the Unity layer) become checks."""
 
     display_name = "Unity Achievements"
     range_start = 0
-    range_end = 359
-    default = 359
+    range_end = 514
+    default = 514
 
 
 class SecretAchievements(Toggle):
     """
-    Add the 55 secret achievements (ids 10000-10054) as checks.
+    Add the 58 secret achievements (ids 10000-10057) as checks.
 
     These are cryptic / hard to get, so they're treated as deep-game checks (gated behind the Unity
     layer) and are off by default. Note: every check needs an item, so very low achievement counts

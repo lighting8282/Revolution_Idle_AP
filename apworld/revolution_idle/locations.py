@@ -11,12 +11,14 @@ if TYPE_CHECKING:
     from .world import RevolutionIdleWorld
 
 # Mirrors GameData.ACH_COUNT (normal achievements). Location id = ACH_ID_BASE + game_id, which also
-# works for secrets (game ids 10000-10054 -> location ids 20000-20054).
-ACH_COUNT = 520
+# works for secrets (game ids 10000-10057 -> location ids 20000-20057).
+# Game 1.077 raised this 520 -> 675. Achievements are append-only (ids 0-519 are byte-identical), so
+# existing location ids stay valid and the new ones simply extend the map.
+ACH_COUNT = 675
 ACH_ID_BASE = 10_000
 
-# Secret achievements (Const.ACH_SECRET_COUNT = 55, game ids 10000..10054). Opt-in via option.
-SECRET_COUNT = 55
+# Secret achievements (Const.ACH_SECRET_COUNT = 58, game ids 10000..10057). Opt-in via option.
+SECRET_COUNT = 58
 SECRET_GAME_ID_BASE = 10_000
 
 # Base-layer generators (GameData.infinity.generators, GEN_COUNT=10). Owning each one is a check.
@@ -70,7 +72,7 @@ TIERS: list[tuple[int, int, str, str]] = [
     (0, 30, "Menu", "achievements_base"),         # base/prestige tier
     (30, 70, "Infinity", "achievements_infinity"),
     (70, 161, "Eternity", "achievements_eternity"),
-    (161, 520, "Unity", "achievements_unity"),
+    (161, 675, "Unity", "achievements_unity"),   # 1.077 put all 155 new achievements in this tier
 ]
 
 # Secret achievements have unknown/obscure requirements; gate them behind the deepest layer so AP

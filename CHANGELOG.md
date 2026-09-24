@@ -12,6 +12,28 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.19.0] - 2026-09-24
+
+### Added
+- **Game 1.077 support: 675 achievements (was 520) and 58 secrets (was 55).** Confirmed from a live
+  diagnostic dump: `Const.ACH_COUNT = 675`, `ACH_SECRET_COUNT = 58`, and `ACH_RANGES` =
+  `[0,30) [30,70) [70,161) [161,675) [10000,10058)`. All 155 new achievements went into the
+  **existing Unity tier** — the update added no new tier, and ids 0-519 are unchanged, so existing
+  location ids stay valid and the new ones simply extend the map.
+  - `achievements_unity` range/default 359 -> **514**; `achievement_count_goal` max 520 -> **675**.
+  - `_ACH_COUNT_GATES` Unity threshold 520 -> 675, so the `achievement_count` goal still gates its
+    win region on the right layer.
+  - The mod's own id filter (`AchCount` / `SecretCount`) was rejecting ids >= 520, so the new
+    achievements could not have been sent even once the apworld defined them.
+  - Verified by generation: 1943 defined locations (675 + 58 + 10 + 1000 generator-level + 200
+    ascension), and a `goal: infinity` slot still correctly drops the deeper tiers.
+
+### Fixed
+- **F2 often looked broken.** Feed lines expire after 12s, and the overlay drew nothing when no line
+  was live — so toggling the feed on during a quiet moment was indistinguishable from the key not
+  working. F2-on now confirms itself with a feed line and reveals recent history for 10s (the fade
+  is suppressed while revealing, which would otherwise draw those lines at alpha 0).
+
 ## [0.18.1] - 2026-09-24
 
 ### Fixed

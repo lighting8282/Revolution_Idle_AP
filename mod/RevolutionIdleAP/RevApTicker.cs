@@ -16,7 +16,17 @@ public class RevApTicker : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F1))
             Plugin.ShowMenu = !Plugin.ShowMenu;
         if (Input.GetKeyDown(KeyCode.F2))
+        {
             Plugin.ShowFeed = !Plugin.ShowFeed;
+            if (Plugin.ShowFeed)
+            {
+                // Each line normally expires after FeedSeconds, so toggling the feed on during a
+                // quiet moment used to draw nothing at all — indistinguishable from F2 being
+                // broken. Reveal recent history for a few seconds, and always confirm the toggle.
+                _revealUntil = DateTime.UtcNow.AddSeconds(RevealSeconds);
+                ApFeed.Add("AP message feed ON (F2 to hide).", new Color(0.7f, 0.9f, 1f));
+            }
+        }
 
         // Drive freeze/lag traps off unscaled time so they run (and self-restore) even at timeScale 0.
         try { ItemEffects.UpdateTimeEffects(); }
@@ -45,6 +55,8 @@ public class RevApTicker : MonoBehaviour
     private GUIStyle? _warnStyle;
     private const float FeedSeconds = 12f;  // how long each message stays on screen
     private const int FeedMaxLines = 10;
+    private const double RevealSeconds = 10.0;  // after F2-on, show recent history even if expired
+    private DateTime _revealUntil = DateTime.MinValue;
 
     public void OnGUI()
     {
@@ -132,10 +144,14 @@ public class RevApTicker : MonoBehaviour
         _feedStyle ??= new GUIStyle(GUI.skin.label) { wordWrap = true, fontSize = 13, fontStyle = FontStyle.Bold, alignment = TextAnchor.UpperLeft };
 
         var now = DateTime.UtcNow;
+        bool revealing = now < _revealUntil;
         var visible = new System.Collections.Generic.List<ApFeed.Entry>();
         for (int i = all.Count - 1; i >= 0 && visible.Count < FeedMaxLines; i--)
         {
-            if ((now - all[i].Time).TotalSeconds <= FeedSeconds) visible.Add(all[i]);
+            // While revealing, take the most recent lines regardless of age so F2 actually shows
+            // you what happened; otherwise only lines still within their display window.
+            if (revealing || (now - all[i].Time).TotalSeconds <= FeedSeconds) visible.Add(all[i]);
+            else break;   // older entries can only be older still
         }
         if (visible.Count == 0) return;
         visible.Reverse(); // oldest at top, newest at bottom
@@ -161,7 +177,10 @@ public class RevApTicker : MonoBehaviour
         for (int i = 0; i < visible.Count; i++)
         {
             double age = (now - visible[i].Time).TotalSeconds;
-            float alpha = age > FeedSeconds - 3.0 ? Mathf.Clamp01((float)(FeedSeconds - age) / 3f) : 1f;
+            // While revealing, expired lines are deliberately on screen — the normal fade would
+            // compute alpha 0 for them and draw an empty box.
+            float alpha = revealing ? 1f
+                        : age > FeedSeconds - 3.0 ? Mathf.Clamp01((float)(FeedSeconds - age) / 3f) : 1f;
             var c = visible[i].Color; c.a = alpha;
             GUI.color = c;
             GUI.Label(new Rect(x + pad, yy, w - pad * 2f, heights[i]), visible[i].Text, _feedStyle);

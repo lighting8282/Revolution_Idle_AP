@@ -233,19 +233,19 @@ Revolution Idle:
     random-range-1-9000: 0 # random value between 1 and 9000
 
   achievement_count_goal:
-    # For the `achievement_count` goal: how many achievements you must unlock in-game (1-520).
+    # For the `achievement_count` goal: how many achievements you must unlock in-game (1-675).
     # 
     # This counts your real in-game achievement unlocks (independent of how many are AP checks). The
     # win region is gated by the count: higher targets require the deeper prestige layers to reach.
     #
     # You can define additional values between the minimum and maximum values.
     # Minimum value is 1
-    # Maximum value is 520
+    # Maximum value is 675
     250: 50
     random: 0
     random-low: 0 # random value weighted towards lower values
     random-high: 0 # random value weighted towards higher values
-    random-range-1-520: 0 # random value between 1 and 520
+    random-range-1-675: 0 # random value between 1 and 675
 
   ######################
   # Achievement Checks #
@@ -287,19 +287,19 @@ Revolution Idle:
     random-range-0-91: 0 # random value between 0 and 91
 
   achievements_unity:
-    # How many Unity-tier achievements (ids 161-519, need the Unity layer) become checks.
+    # How many Unity-tier achievements (ids 161-674, need the Unity layer) become checks.
     #
     # You can define additional values between the minimum and maximum values.
     # Minimum value is 0
-    # Maximum value is 359
-    359: 50
+    # Maximum value is 514
+    514: 50
     random: 0
     random-low: 0 # random value weighted towards lower values
     random-high: 0 # random value weighted towards higher values
-    random-range-0-359: 0 # random value between 0 and 359
+    random-range-0-514: 0 # random value between 0 and 514
 
   secret_achievements:
-    # Add the 55 secret achievements (ids 10000-10054) as checks.
+    # Add the 58 secret achievements (ids 10000-10057) as checks.
     # 
     # These are cryptic / hard to get, so they're treated as deep-game checks (gated behind the Unity
     # layer) and are off by default. Note: every check needs an item, so very low achievement counts

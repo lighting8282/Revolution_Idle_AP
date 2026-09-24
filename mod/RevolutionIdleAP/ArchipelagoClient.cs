@@ -18,9 +18,9 @@ namespace RevolutionIdleAP;
 public class ArchipelagoClient
 {
     public const long AchIdBase = 10_000;
-    public const int AchCount = 520;       // normal achievements: game ids 0..519
+    public const int AchCount = 675;       // normal achievements: game ids 0..674 (game 1.077; was 520)
     public const int SecretGameIdBase = 10_000;
-    public const int SecretCount = 55;     // secret achievements: game ids 10000..10054 (opt-in locations)
+    public const int SecretCount = 58;     // secret achievements: game ids 10000..10057 (opt-in locations)
     public const long GenIdBase = 30_000;
     public const int GenCount = 10;  // base generators (GameData.infinity.generators)
     public const long GenLevelIdBase = 40_000;

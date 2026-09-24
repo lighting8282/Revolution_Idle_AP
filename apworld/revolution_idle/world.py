@@ -11,7 +11,7 @@ class RevolutionIdleWorld(World):
     """
     Revolution Idle is a deep incremental/idle game with a prestige tower (Prestige, Infinity,
     Eternity, Unity, Equality) and many side systems. This Archipelago world gates those layers
-    and systems behind items, and turns the game's 520 achievements into location checks.
+    and systems behind items, and turns the game's 675 achievements into location checks.
     """
 
     game = "Revolution Idle"
@@ -38,8 +38,8 @@ class RevolutionIdleWorld(World):
     }
 
     # Cumulative achievements obtainable once each layer is unlocked (Base 30, +Infinity=70,
-    # +Eternity=161, +Unity=520). Used to gate the achievement_count goal's win region.
-    _ACH_COUNT_GATES = [(30, "Menu"), (70, "Infinity"), (161, "Eternity"), (520, "Unity")]
+    # +Eternity=161, +Unity=675). Used to gate the achievement_count goal's win region.
+    _ACH_COUNT_GATES = [(30, "Menu"), (70, "Infinity"), (161, "Eternity"), (675, "Unity")]
 
     @property
     def goal_region_name(self) -> str:
