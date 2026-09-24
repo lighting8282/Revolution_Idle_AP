@@ -12,6 +12,21 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.17.3] - 2026-09-24
+
+### Fixed
+- **The F1 menu (and the whole mod) was missing after the AP Mode toggle restarted the game.**
+  `RestartGame` relaunched the executable without setting a working directory. Doorstop resolves
+  its config paths relative to the working directory (`target_assembly = BepInEx\core\...`,
+  `coreclr_path = dotnet\coreclr.dll`), so the relaunched game started with **BepInEx silently not
+  loaded** — the game itself ran normally, which is why this looked like "the menu disappeared"
+  rather than "the mod didn't load". Confirmed from `LogOutput.log`: the restarted instance never
+  opened a new BepInEx session.
+  - The restart now prefers the shipped `launch.ps1` (passing `-AP` to match the new mode), so a
+    toggle-restart takes exactly the same path as the "Play Revolution Idle (AP)" shortcut.
+  - The direct-exe fallback pins the working directory on both `cmd` and `start /D`.
+  - The chosen path and working directory are logged.
+
 ## [0.17.2] - 2026-09-24
 
 ### Fixed

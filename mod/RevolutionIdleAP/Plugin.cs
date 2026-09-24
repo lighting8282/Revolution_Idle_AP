@@ -17,7 +17,7 @@ public class Plugin : BasePlugin
 {
     public const string Guid = "com.jontrnka.revolutionidle.ap";
     public const string Name = "Revolution Idle Archipelago";
-    public const string Version = "0.17.2";
+    public const string Version = "0.17.3";
 
     internal static ManualLogSource Logger = null!;
     public static ArchipelagoClient? Client;
@@ -177,23 +177,55 @@ public class Plugin : BasePlugin
         if (_apModeEntry == null) return;
         _apModeEntry.Value = !_apModeEntry.Value;   // BepInEx writes this to the .cfg immediately
         Logger.LogInfo($"[AP] AP Mode -> {_apModeEntry.Value}; restarting game...");
-        RestartGame();
+        RestartGame(_apModeEntry.Value);
     }
 
     // Relaunch this game executable after the current instance exits (avoids a two-instance overlap),
     // then quit. The new launch reads the updated AP Mode from config.
-    private static void RestartGame()
+    //
+    // The working directory MUST be the game folder. Doorstop resolves its config paths
+    // (target_assembly = BepInEx\core\..., coreclr_path = dotnet\coreclr.dll) relative to the
+    // working directory, so relaunching without it starts the game with BepInEx silently not
+    // loaded — the game runs fine but the mod, and therefore the F1 menu, is simply absent.
+    // This is why the shipped launch.ps1 passes -WorkingDirectory. Prefer that script when it's
+    // there, so the restart takes exactly the same path as the desktop shortcuts.
+    private static void RestartGame(bool apMode)
     {
         try
         {
             string exe = Process.GetCurrentProcess().MainModule!.FileName;
-            Process.Start(new ProcessStartInfo
+            string dir = System.IO.Path.GetDirectoryName(exe)!;
+            string launcher = System.IO.Path.Combine(dir, "launch.ps1");
+            ProcessStartInfo psi;
+
+            if (System.IO.File.Exists(launcher))
             {
-                FileName = "cmd.exe",
-                Arguments = $"/c timeout /t 2 /nobreak >nul & start \"\" \"{exe}\"",
-                UseShellExecute = false,
-                CreateNoWindow = true,
-            });
+                psi = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/c timeout /t 2 /nobreak >nul & powershell -NoProfile -ExecutionPolicy Bypass "
+                              + $"-File \"{launcher}\"{(apMode ? " -AP" : "")}",
+                    WorkingDirectory = dir,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                };
+            }
+            else
+            {
+                // No launcher (e.g. a dev install): start the exe directly, but pin the working
+                // directory both for cmd and for `start` itself so Doorstop still finds BepInEx.
+                psi = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/c timeout /t 2 /nobreak >nul & start \"\" /D \"{dir}\" \"{exe}\"",
+                    WorkingDirectory = dir,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                };
+            }
+
+            Logger.LogInfo($"[AP] relaunching via {(System.IO.File.Exists(launcher) ? "launch.ps1" : "direct exe")} (cwd: {dir})");
+            Process.Start(psi);
         }
         catch (System.Exception e) { Logger.LogError("[AP] restart failed: " + e.Message); }
         Application.Quit();

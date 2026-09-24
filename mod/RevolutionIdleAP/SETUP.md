@@ -68,3 +68,9 @@ warning (one metadata-less interop stub) is harmless. Launch the game and check 
   (AP Mode's save isolation does not cover them) and cannot be cleared from inside the game.
   Reflect state by patching the UI instead — `DisplayAchievementItem.Update` +
   `overlayLocked.SetActive(false)` — and keep `SteamAchievementGuard` in place as a backstop.
+- **Anything that relaunches the game must set the working directory to the game folder.** Doorstop
+  resolves `target_assembly` / `coreclr_path` / `corlib_dir` from `doorstop_config.ini` relative to
+  the working directory, so a relaunch without it boots the game with BepInEx quietly absent — the
+  game looks fine and only the mod is missing. Prefer the shipped `launch.ps1`, which passes
+  `-WorkingDirectory`. Symptom to recognise: no new `Preloader` session appears in
+  `BepInEx/LogOutput.log` for the relaunched process.
