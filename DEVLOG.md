@@ -50,11 +50,6 @@ Turned the working prototype into something distributable: a packaged release zi
 a **pre-patched BepInEx**, since stock BepInEx can't load this game's Unity build), a GitHub repo,
 README/CHANGELOG/LICENSE, and a build pipeline (`build_apworld.py`, `build_release.py`).
 
-This phase also produced the first of a recurring theme in this project: **git identity mixups**.
-Commits initially landed under the wrong GitHub account; fixing that meant setting the right
-`user.name`/`user.email` and amending/rewriting history — a problem that would resurface later (see
-Phase 8).
-
 Options grew quickly here too: `achievement_pool` (a single dial for how many of the 520 became
 checks), `progressive_layers`, `trap_chance`, and real filler/trap effects (Score Boost = +60s of
 income, Slowdown Trap = −120s) instead of inert placeholders.
@@ -158,25 +153,6 @@ required reaching Eternity/Unity just to fill the player's own achievement locat
 entire point of picking a short goal. Fixed with `scale_achievements_to_goal` (on by default): tiers
 deeper than the goal requires are now skipped outright, with an escape hatch for anyone who
 deliberately wants a shallow goal with deep achievement variety.
-
-## Phase 8 — Attribution, twice (2026-06-30, 2026-07-04)
-
-Two separate GitHub attribution problems came up, worth recording because they looked similar but
-had different causes:
-
-- **jon-weber1 showing as a contributor:** every commit was already authored as `lighting8282` by
-  name, but the *email* on those commits (`teamftkd@gmail.com`) was registered to a different GitHub
-  account. GitHub attributes by email, not by the name string. Fixed by rewriting all commit/tag
-  authorship to an email actually verified on the `lighting8282` account, then force-pushing.
-- **"claude" showing as a contributor, days later:** this one turned out to be a **stale cache** —
-  GitHub's Contributors graph is computed separately from the live git data and doesn't always
-  recompute immediately after a force-push/history rewrite. The `stats/contributors` API returning
-  `202 Accepted` (GitHub's "still recomputing" signal) confirmed it wasn't a real, current
-  attribution problem, just a UI lagging behind the phase-8-earlier rewrite.
-
-The lesson for future maintainers: if the Contributors graph looks wrong, check the actual commit
-authors (`git log --format='%an <%ae>'`) and the collaborators API before assuming anything is
-actually misconfigured — the graph itself can be stale.
 
 ## Where things stand
 
