@@ -142,6 +142,10 @@ class SecretAchievements(Toggle):
     skipped for any goal shallower than Unity — otherwise a short goal like `infinity` would still
     require reaching Unity just to complete your own checks.
 
+    Note that this overrides the setting: with a shallow goal, turning this on still gives you no
+    secret checks, and generation logs a warning saying so. To have both, also set
+    scale_achievements_to_goal: false.
+
     These are cryptic / hard to get, so they're treated as deep-game checks (gated behind the Unity
     layer) and are off by default. Note: every check needs an item, so very low achievement counts
     combined with this off may leave fewer locations than the ~36 required unlock items.

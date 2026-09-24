@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+
 from typing import TYPE_CHECKING
 
 from BaseClasses import Location, LocationProgressType
@@ -167,9 +169,20 @@ def create_all_locations(world: RevolutionIdleWorld) -> None:
     # Secret achievements (opt-in) — gated behind the deepest layer, so they obey
     # scale_achievements_to_goal exactly like the deeper tiers do. Without this, `goal: infinity`
     # plus secrets put 58 of the player's own checks two layers past their goal.
-    if world.options.secret_achievements and not _deeper_than_goal(world, SECRET_REGION):
-        secret_names = {secret_location_name(i): secret_location_id(i) for i in range(SECRET_COUNT)}
-        world.get_region(SECRET_REGION).add_locations(secret_names, RevolutionIdleLocation)
+    if world.options.secret_achievements:
+        if _deeper_than_goal(world, SECRET_REGION):
+            # Say so: the option was asked for and is being overridden, and the only other clue is
+            # a location count the player has no reason to be counting.
+            logging.warning(
+                "Revolution Idle (%s): secret_achievements was requested but skipped — secrets sit "
+                "behind Unity and the '%s' goal only requires reaching %s. Set "
+                "scale_achievements_to_goal: false to include them anyway (you would then need to "
+                "reach Unity to complete them).",
+                world.player_name, world.options.goal.current_key, world.goal_region_name,
+            )
+        else:
+            secret_names = {secret_location_name(i): secret_location_id(i) for i in range(SECRET_COUNT)}
+            world.get_region(SECRET_REGION).add_locations(secret_names, RevolutionIdleLocation)
 
     # Generator checks (own each base generator) — reachable from the start, so they go in Menu.
     gen_names = {gen_location_name(i): GEN_ID_BASE + i for i in range(GEN_COUNT)}

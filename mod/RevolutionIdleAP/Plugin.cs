@@ -20,7 +20,7 @@ public class Plugin : BasePlugin
     // their connection details. BepInEx names the config file after the GUID.
     private const string LegacyGuid = "com.jontrnka.revolutionidle.ap";
     public const string Name = "Revolution Idle Archipelago";
-    public const string Version = "0.20.3";
+    public const string Version = "0.20.4";
 
     internal static ManualLogSource Logger = null!;
     public static ArchipelagoClient? Client;

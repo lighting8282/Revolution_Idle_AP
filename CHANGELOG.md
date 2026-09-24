@@ -11,6 +11,16 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
 
+## [0.20.4] - 2026-09-24
+
+### Changed
+- **Generation now warns when `secret_achievements` is overridden.** With a goal shallower than
+  Unity, requesting secrets still (deliberately) yields none — but that was silent, and the only
+  other clue was a location count nobody has reason to be counting. The generator now logs which
+  slot, which goal, and how to get them anyway (`scale_achievements_to_goal: false`). The behaviour
+  itself is unchanged; short goals stay short.
+- The `secret_achievements` option text now states plainly that a shallow goal overrides it.
+
 ## [0.20.3] - 2026-09-24
 
 A documentation and consistency pass before wider release, plus one generation fix.
