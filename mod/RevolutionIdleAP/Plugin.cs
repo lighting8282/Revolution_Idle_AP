@@ -15,9 +15,12 @@ namespace RevolutionIdleAP;
 [BepInPlugin(Guid, Name, Version)]
 public class Plugin : BasePlugin
 {
-    public const string Guid = "com.jontrnka.revolutionidle.ap";
+    public const string Guid = "com.lighting8282.revolutionidle.ap";
+    // Renamed from this in 0.20.3; MigrateLegacyConfig carries settings over so nobody re-types
+    // their connection details. BepInEx names the config file after the GUID.
+    private const string LegacyGuid = "com.jontrnka.revolutionidle.ap";
     public const string Name = "Revolution Idle Archipelago";
-    public const string Version = "0.20.2";
+    public const string Version = "0.20.3";
 
     internal static ManualLogSource Logger = null!;
     public static ArchipelagoClient? Client;
@@ -100,6 +103,8 @@ public class Plugin : BasePlugin
         Logger = Log;
         Logger.LogInfo($"{Name} v{Version} loading...");
 
+        MigrateLegacyConfig();
+
         _cfgHost = Config.Bind("Connection", "Host", "archipelago.gg", "Archipelago server host");
         _cfgPort = Config.Bind("Connection", "Port", 38281, "Archipelago server port");
         _cfgSlot = Config.Bind("Connection", "Slot", "Player1", "Slot / player name");
@@ -166,6 +171,27 @@ public class Plugin : BasePlugin
         else Logger.LogInfo("[AP] auto-connect disabled; use the F1 menu to connect.");
 
         Logger.LogInfo("Revolution Idle AP loaded. Press F1 in-game for the connection menu.");
+    }
+
+    // BepInEx derives the config filename from the plugin GUID, so renaming the GUID would
+    // otherwise silently orphan the player's existing settings (host/port/slot/AP Mode) and look
+    // like the mod had forgotten them. Copy the old file across once, then reload.
+    private void MigrateLegacyConfig()
+    {
+        try
+        {
+            string dir = System.IO.Path.GetDirectoryName(Config.ConfigFilePath)!;
+            string legacy = System.IO.Path.Combine(dir, LegacyGuid + ".cfg");
+            if (!System.IO.File.Exists(legacy)) return;
+
+            var current = new System.IO.FileInfo(Config.ConfigFilePath);
+            if (current.Exists && current.Length > 0) return;   // already migrated or already in use
+
+            System.IO.File.Copy(legacy, Config.ConfigFilePath, overwrite: true);
+            Config.Reload();
+            Logger.LogInfo($"[AP] migrated settings from {LegacyGuid}.cfg (the old file is left in place).");
+        }
+        catch (System.Exception e) { Logger.LogWarning("[AP] config migration skipped: " + e.Message); }
     }
 
     // Connect (or reconnect) using the current menu field values.

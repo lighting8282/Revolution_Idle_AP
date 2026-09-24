@@ -14,7 +14,7 @@ class RevolutionIdleWebWorld(WebWorld):
         "English",
         "setup_en.md",
         "setup/en",
-        ["Jon Trnka"],
+        ["lighting8282"],
     )
     tutorials = [setup_en]
 

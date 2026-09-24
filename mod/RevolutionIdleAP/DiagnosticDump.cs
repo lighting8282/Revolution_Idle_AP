@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -82,8 +82,6 @@ public static class DiagnosticDump
         try { return (data.unlockedAch?.Count ?? -1).ToString(); } catch { return "?"; }
     }
 
-    // The new Singularity layer: its counter (the `singularity` goal candidate) and sub-systems,
-    // now typed because BepInEx regenerated the interop for the updated game build.
     // Why the goal has or hasn't fired: the configured target next to the live value it's compared
     // against. Without this, a goal that won't trigger is indistinguishable from a goal whose
     // threshold never arrived in slot_data.
@@ -109,6 +107,8 @@ public static class DiagnosticDump
         W("");
     }
 
+    // The new Singularity layer: its counter (the `singularity` goal candidate) and sub-systems,
+    // now typed because BepInEx regenerated the interop for the updated game build.
     private static void DumpSingularity(Action<string> W, GameData data)
     {
         W("--- Singularity (new layer) ---");
@@ -138,7 +138,11 @@ public static class DiagnosticDump
     private static void DumpAchRanges(Action<string> W)
     {
         W("--- Const.ACH_RANGES (category -> (start, endExclusive)) ---");
-        W("    apworld currently assumes: 0=[0,30) 1=[30,70) 2=[70,161) 3=[161,520) secret=[10000,10055)");
+        var tiers = string.Join(" ", System.Linq.Enumerable.Select(
+            System.Linq.Enumerable.Range(0, ArchipelagoClient.AchTiers.Length),
+            i => $"{i}=[{ArchipelagoClient.AchTiers[i].Start},{ArchipelagoClient.AchTiers[i].End})"));
+        W($"    apworld currently assumes: {tiers} secret=[{ArchipelagoClient.SecretGameIdBase}," +
+          $"{ArchipelagoClient.SecretGameIdBase + ArchipelagoClient.SecretCount})");
         try
         {
             var ranges = Const.ACH_RANGES;

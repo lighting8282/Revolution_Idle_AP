@@ -176,7 +176,7 @@ Revolution Idle:
   revolution_speed_multiplier: 10  # 10x revolution fill speed; 1 = vanilla pacing
   trap_chance: 10             # 0-100; when a trap rolls, its type is random
   death_link: false
-  # Goal-specific thresholds (generators_goal_*, score_goal_exponent, ...) and trap/filler
+  # Goal-specific thresholds (ascension_goal, score_goal_exponent, ...) and trap/filler
   # magnitudes (freeze_trap_seconds, overdrive_seconds, ...) all have sensible defaults —
   # see the full template for the complete list.
 ```

@@ -1,6 +1,13 @@
-<#
+﻿<#
 .SYNOPSIS
-  Back up and wipe the Revolution Idle save for a clean Archipelago run, and restore it later.
+  Back up and wipe the Revolution Idle save, and restore it later.
+
+.NOTES
+  Rarely needed now: AP Mode keeps AP play on its own isolated save and starts each new seed fresh
+  by itself. This script is for normal-play saves, or for recovering from a bad state.
+
+  It matches game_data_* / inventory_*, which includes AP Mode's own keys (game_data_ap), so a wipe
+  clears BOTH the normal and the AP save. Everything is backed up first.
 
 .DESCRIPTION
   Revolution Idle stores its save in the Windows registry under

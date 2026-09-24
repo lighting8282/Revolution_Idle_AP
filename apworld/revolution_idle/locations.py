@@ -121,6 +121,18 @@ class RevolutionIdleLocation(Location):
     game = "Revolution Idle"
 
 
+def _deeper_than_goal(world: RevolutionIdleWorld, region_name: str) -> bool:
+    """Should achievements in `region_name` be skipped for this seed?
+
+    True when scale_achievements_to_goal is on and the region sits deeper in the tower than the
+    chosen goal requires — i.e. the player would have to progress past their own goal purely to
+    complete their own checks.
+    """
+    if not world.options.scale_achievements_to_goal:
+        return False
+    return REGION_DEPTH[region_name] > REGION_DEPTH[world.goal_region_name]
+
+
 def selected_achievement_ids(world: RevolutionIdleWorld) -> dict[str, list[int]]:
     """Per tier, sample the requested number of achievement ids (deterministically via world.random).
 
@@ -132,10 +144,8 @@ def selected_achievement_ids(world: RevolutionIdleWorld) -> dict[str, list[int]]
     Returns {region_name: [game_ids]}."""
     rng = world.random
     by_region: dict[str, list[int]] = {}
-    scale = bool(world.options.scale_achievements_to_goal)
-    goal_depth = REGION_DEPTH[world.goal_region_name]
     for start, end, region_name, option_attr in TIERS:
-        if scale and REGION_DEPTH[region_name] > goal_depth:
+        if _deeper_than_goal(world, region_name):
             continue
         n = getattr(world.options, option_attr).value
         ids = list(range(start, end))
@@ -154,8 +164,10 @@ def create_all_locations(world: RevolutionIdleWorld) -> None:
         if names_to_ids:
             world.get_region(region_name).add_locations(names_to_ids, RevolutionIdleLocation)
 
-    # Secret achievements (opt-in) — gated behind the deepest layer.
-    if world.options.secret_achievements:
+    # Secret achievements (opt-in) — gated behind the deepest layer, so they obey
+    # scale_achievements_to_goal exactly like the deeper tiers do. Without this, `goal: infinity`
+    # plus secrets put 58 of the player's own checks two layers past their goal.
+    if world.options.secret_achievements and not _deeper_than_goal(world, SECRET_REGION):
         secret_names = {secret_location_name(i): secret_location_id(i) for i in range(SECRET_COUNT)}
         world.get_region(SECRET_REGION).add_locations(secret_names, RevolutionIdleLocation)
 

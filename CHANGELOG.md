@@ -8,9 +8,49 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and
 
 ### Planned
 - Per-side-system achievement gating (current logic gates by prestige tier only).
-- Optional secret achievements as checks.
 - Equality goal verified in a deep playthrough.
 - PopTracker pack.
+
+## [0.20.3] - 2026-09-24
+
+A documentation and consistency pass before wider release, plus one generation fix.
+
+### Fixed
+- **`secret_achievements` ignored `scale_achievements_to_goal`.** The 58 secrets are Unity-gated but
+  were added regardless of the goal, so `goal: infinity` + secrets put 58 of the player's own checks
+  two layers past their goal — the exact problem `scale_achievements_to_goal` exists to prevent.
+  Secrets now follow the same rule as the deeper tiers (and are still included when the option is
+  turned off). Verified by generation: shallow goal 0 secrets, `unity` goal 58, scaling off 58.
+- **The apworld's setup guide was still a v0.1 scaffold** — the page shown on the Archipelago
+  website said the mod was "not yet released" and that instructions would follow. Rewritten.
+- **The README inside the release zip** described a pre-AP-Mode-gate workflow: it listed 2 of 8
+  goals, told players to connect without mentioning AP Mode is required, described AP Mode as
+  "recommended" and configured by a config setting, and claimed secret achievements weren't
+  usable as checks. Rewritten.
+- `README.md` referenced `generators_goal_*`, an option that doesn't exist (a leftover from the
+  goal design that ascension replaced).
+- `DESIGN.md` still described `AchievementSync` as marking achievements in `unlockedAch`/`achByte`
+  "visual only, no reward" — i.e. the removed behaviour that granted hundreds of real Steam
+  achievements, presented as current design. It also carried 520/55 counts, the 1-100 generator
+  level model, and none of the guards added since. Updated, with the hazard recorded next to the
+  code it concerns and the four-layer AP-play safety model documented.
+- The diagnostic's "apworld currently assumes" line was hardcoded to the old 520/55 ranges — the one
+  line whose job is to reveal apworld/game drift. It now derives from `ArchipelagoClient`'s
+  constants, so it cannot go stale again.
+- `launch.ps1` cleared the AP Mode override in the old config filename only, which would have
+  silently stopped working after the GUID rename below. It now clears both.
+
+### Changed
+- **Plugin GUID renamed** `com.jontrnka.revolutionidle.ap` -> `com.lighting8282.revolutionidle.ap`.
+  BepInEx names the config file after the GUID, so settings are migrated automatically on first run
+  (the old file is left in place); nobody needs to re-enter connection details.
+- Tutorial author metadata is now `lighting8282`, matching `archipelago.json`.
+- `reset-save.ps1` documents that it is rarely needed under AP Mode, and that its `game_data_*`
+  match clears the AP save too (everything is backed up first).
+- Removed the stale root `RELEASE_NOTES.md` (v0.2.0); per-version notes live with each release.
+- The mod's `revolution_speed_multiplier` fallback of 1 (vs the apworld's default of 10) is now
+  documented as deliberate: a slot_data without the key plays at vanilla speed rather than silently
+  running at 10x.
 
 ## [0.20.2] - 2026-09-24
 

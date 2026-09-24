@@ -21,6 +21,12 @@ public class ArchipelagoClient
     public const int AchCount = 675;       // normal achievements: game ids 0..674 (game 1.077; was 520)
     public const int SecretGameIdBase = 10_000;
     public const int SecretCount = 58;     // secret achievements: game ids 10000..10057 (opt-in locations)
+
+    // Mirrors the apworld's TIERS (locations.py). Held here so the diagnostic can report what the
+    // apworld actually assumes, instead of a hand-written string that silently goes stale — which
+    // is exactly what happened when the game went from 520 to 675 achievements.
+    public static readonly (int Start, int End)[] AchTiers =
+        { (0, 30), (30, 70), (70, 161), (161, AchCount) };
     public const long GenIdBase = 30_000;
     public const int GenCount = 10;  // base generators (GameData.infinity.generators)
     public const long GenLevelIdBase = 40_000;
@@ -39,6 +45,8 @@ public class ArchipelagoClient
     public bool GoalSent { get; private set; }
 
     // From slot_data: multiplier on how fast the revolutions fill (1 = vanilla speed).
+    // The apworld's default is 10; this fallback is deliberately 1 so that a slot_data without
+    // the key (an older apworld) plays at untouched speed rather than silently 10x-ing the game.
     public int RevolutionSpeedMultiplier { get; private set; } = 1;
 
     // From slot_data: per-generator level milestones (count = 0 disables; milestone k = level

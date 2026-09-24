@@ -1,4 +1,4 @@
-<#
+﻿<#
 Launches Revolution Idle in AP or Normal mode. Lives in the game folder (next to
 Revolution Idle.exe). Use the "Play Revolution Idle (AP)" / "(Normal)" shortcuts, or:
   powershell -ExecutionPolicy Bypass -File launch.ps1 -AP    # AP version (offline, isolated save)
@@ -22,11 +22,17 @@ $root = $PSScriptRoot
 # marker would be inherited all the way down and the relaunched game would quietly run without
 # BepInEx. Clearing it here makes the launcher safe no matter who invoked it.
 Get-ChildItem Env: | Where-Object { $_.Name -like 'DOORSTOP_*' } | ForEach-Object { Remove-Item "Env:$($_.Name)" }
-$cfg  = Join-Path $root "BepInEx\config\com.jontrnka.revolutionidle.ap.cfg"
+# Both the current config and the pre-0.20.3 one: the mod migrates the old file across on first
+# run, so a stale "Enabled = true" left in either could contradict the launch argument.
+$cfgs = @(
+    (Join-Path $root "BepInEx\config\com.lighting8282.revolutionidle.ap.cfg"),
+    (Join-Path $root "BepInEx\config\com.jontrnka.revolutionidle.ap.cfg")
+)
 $exe  = Join-Path $root "Revolution Idle.exe"
 
 # Section-aware clear of [AP Mode] Enabled (the file also has an Enabled under [Connection]).
-if (Test-Path $cfg) {
+foreach ($cfg in $cfgs) {
+    if (-not (Test-Path $cfg)) { continue }
     $lines = Get-Content $cfg
     $inSection = $false
     for ($i = 0; $i -lt $lines.Count; $i++) {
